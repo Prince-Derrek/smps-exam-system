@@ -19,12 +19,12 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
+    # FIX: We use a wildcard to find the SLN wherever VS put it inside backend/
     - name: Restore Dependencies
-      run: dotnet restore ./backend/SMPS.SupplementaryExamSystem.sln
+      run: dotnet restore backend/**/*.sln
 
     - name: Build Backend
-      # --no-restore flag speeds it up since we just restored
-      run: dotnet build ./backend/SMPS.SupplementaryExamSystem.sln --no-restore --configuration Release
+      run: dotnet build backend/**/*.sln --no-restore --configuration Release
 
   # 🎨 JOB 2: FRONTEND SANITY CHECK
   build-frontend:
@@ -34,10 +34,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    # FIX: Upgraded to Node 22 for Vite 7 support
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 22
 
     - name: Install Dependencies
       working-directory: ./frontend
