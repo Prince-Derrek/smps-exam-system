@@ -40,8 +40,7 @@ We use a simplified **Gitflow** workflow.
    git checkout develop
    git pull origin develop
    git checkout -b feature/backend/mpesa-integration
-
-```
+   ```
 
 2. **Work & Commit:**
 ```bash
