@@ -1,0 +1,48 @@
+name: Build Verification
+
+on:
+  pull_request:
+    branches: [ "develop", "main" ]
+  workflow_dispatch:
+
+jobs:
+  # 🔧 JOB 1: BACKEND SANITY CHECK
+  build-backend:
+    name: Build .NET Backend
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore Dependencies
+      run: dotnet restore ./backend/SMPS.SupplementaryExamSystem.sln
+
+    - name: Build Backend
+      # --no-restore flag speeds it up since we just restored
+      run: dotnet build ./backend/SMPS.SupplementaryExamSystem.sln --no-restore --configuration Release
+
+  # 🎨 JOB 2: FRONTEND SANITY CHECK
+  build-frontend:
+    name: Build React Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - name: Install Dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Build Frontend
+      working-directory: ./frontend
+      run: npm run build
