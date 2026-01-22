@@ -1,6 +1,3 @@
-**Purpose:** A visual and logical guide to the Gitflow model so developers don't accidentally push to production.
-
-```markdown
 # Branching Strategy
 
 We use a simplified **Gitflow** workflow.
@@ -62,5 +59,3 @@ git push -u origin feature/backend/mpesa-integration
 
 
 *Then go to GitHub and open a Pull Request to `develop`.*
-
-```
