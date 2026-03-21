@@ -2,7 +2,7 @@
 
 namespace SMPS.Domain.Entities
 {
-    public class PaymentRecord
+    public class PaymentRecord : BaseEntity
     {
         public Guid Id { get; set; } // Primary Key
 

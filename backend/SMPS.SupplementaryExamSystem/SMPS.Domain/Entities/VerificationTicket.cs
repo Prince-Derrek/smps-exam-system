@@ -1,6 +1,6 @@
 ﻿namespace SMPS.Domain.Entities
 {
-    public class VerificationTicket
+    public class VerificationTicket : BaseEntity
     {
         public Guid Id { get; set; } // This is the cryptographic "Nonce" inside the QR code
 
@@ -10,7 +10,9 @@
 
         // Audit Trail
         public bool IsUsed { get; set; } = false;
-        public DateTime? ScannedAt { get; set; }
-        public string? VerifiedByLecturerName { get; set; } // Captured from the Invigilator's session
+        
+        //Lecturer who scanned the ticket
+        public Guid? InvigilatorId { get; set; }
+        public Invigilator? Invigilator { get; set; }
     }
 }
