@@ -26,3 +26,5 @@ yarn-error.log*
 
 # --- OS Specific ---
 Thumbs.db
+
+.env
