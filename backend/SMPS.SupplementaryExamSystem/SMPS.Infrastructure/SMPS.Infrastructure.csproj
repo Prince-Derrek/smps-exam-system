@@ -10,7 +10,12 @@
     <Folder Include="Notifications\" />
     <Folder Include="Security\" />
     <Folder Include="Payment\" />
-    <Folder Include="Persistence\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.25" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.25" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
   </ItemGroup>
 
   <ItemGroup>
