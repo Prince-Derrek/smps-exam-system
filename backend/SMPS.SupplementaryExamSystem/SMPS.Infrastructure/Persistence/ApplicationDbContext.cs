@@ -15,6 +15,7 @@ namespace SMPS.Infrastructure.Persistence
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<PaymentRecord> PaymentRecords { get; set; }
         public DbSet<VerificationTicket> VerificationTickets { get; set; }
+        public DbSet<Invigilator> Invigilators { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,6 +61,13 @@ namespace SMPS.Infrastructure.Persistence
                 .HasForeignKey<VerificationTicket>(t => t.BookingId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Invigilator -> VerificationTickets (1-to-Many)
+            modelBuilder.Entity<VerificationTicket>()
+                .HasOne(t => t.Invigilator)
+                .WithMany(i => i.ScannedTickets)
+                .HasForeignKey(t => t.InvigilatorId)
+                .OnDelete(DeleteBehavior.SetNull); // If an invigilator leaves, don't delete the scan history
+
             // --------------------------------------------------------
             // 3. PRECISION FORMATTING (PostgreSQL optimization)
             // --------------------------------------------------------
@@ -70,6 +78,35 @@ namespace SMPS.Infrastructure.Persistence
             modelBuilder.Entity<PaymentRecord>()
                 .Property(p => p.Amount)
                 .HasColumnType("decimal(18,2)");
+
+            // --------------------------------------------------------
+            // 4. GLOBAL QUERY FILTERS (Soft Deletes)
+            // --------------------------------------------------------
+            modelBuilder.Entity<Booking>().HasQueryFilter(b => !b.IsDeleted);
+            modelBuilder.Entity<PaymentRecord>().HasQueryFilter(p => !p.IsDeleted);
+            modelBuilder.Entity<VerificationTicket>().HasQueryFilter(t => !t.IsDeleted);
+        }
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+            {
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        entry.Entity.CreatedAt = DateTime.UtcNow;
+                        break;
+                    case EntityState.Modified:
+                        entry.Entity.UpdatedAt = DateTime.UtcNow;
+                        break;
+                    case EntityState.Deleted:
+                        // Prevent hard delete, switch to soft delete
+                        entry.State = EntityState.Modified;
+                        entry.Entity.IsDeleted = true;
+                        entry.Entity.UpdatedAt = DateTime.UtcNow;
+                        break;
+                }
+            }
+            return base.SaveChangesAsync(cancellationToken);
         }
     }
 }
