@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import './App.css'; 
 
 function App() {
-  // 1. States to store what the student types
+
   const [studentId, setStudentId] = useState('');
   const [password, setPassword] = useState('');
 
-  // 2. Function that runs when the 'Login' button is clicked
+
   const handleLogin = (e) => {
     e.preventDefault();
     alert("Attempting Login for ID: " + studentId);
-    // This is where you will eventually add the axios.post code
+  
   };
 
   return (
@@ -45,7 +45,7 @@ function App() {
           <button type="submit">Login to Portal</button>
         </form>
 
-        {/* Optional: Add a small footer link */}
+        {}
         <p style={{ marginTop: '20px', fontSize: '13px', color: '#666' }}>
           <a href="#forgot" style={{ color: '#2e7d32', textDecoration: 'none' }}>Forgot Password?</a>
         </p>
