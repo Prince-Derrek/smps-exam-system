@@ -14,15 +14,15 @@ namespace SMPS.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Invigilator?> GetByEmailAsync(string email)
+        public async Task<Invigilator?> GetInvigilatorByEmailAsync(string email)
             => await _context.Invigilators
                 .FirstOrDefaultAsync(i => i.Email == email);
 
-        public async Task<bool> ExistsByEmailAsync(string email)
+        public async Task<bool> InvigilatorExistsByEmailAsync(string email)
             => await _context.Invigilators
                 .AnyAsync(i => i.Email == email);
 
-        public async Task AddAsync(Invigilator invigilator)
+        public async Task AddInvigilatorAsync(Invigilator invigilator)
             => await _context.Invigilators.AddAsync(invigilator);
     }
 }

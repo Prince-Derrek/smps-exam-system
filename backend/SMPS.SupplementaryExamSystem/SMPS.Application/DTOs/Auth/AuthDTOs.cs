@@ -17,5 +17,5 @@ namespace SMPS.Application.DTOs.Auth
         string Password
     );
 
-    public record AuthResponse(string Token, string Email, string Role);
+    public record AuthResponse(string Token, string Email, string Role, string Name);
 }

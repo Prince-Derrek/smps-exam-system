@@ -4,8 +4,8 @@ namespace SMPS.Domain.Interfaces
 {
     public interface IInvigilatorRepository
     {
-        Task<Invigilator?> GetByEmailAsync(string email);
-        Task<bool> ExistsByEmailAsync(string email);
-        Task AddAsync(Invigilator invigilator);
+        Task<Invigilator?> GetInvigilatorByEmailAsync(string email);
+        Task<bool> InvigilatorExistsByEmailAsync(string email);
+        Task AddInvigilatorAsync(Invigilator invigilator);
     }
 }

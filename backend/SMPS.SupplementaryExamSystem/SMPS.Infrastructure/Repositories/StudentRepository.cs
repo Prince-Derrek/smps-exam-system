@@ -14,15 +14,15 @@ namespace SMPS.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Student?> GetByEmailAsync(string email)
+        public async Task<Student?> GetStudentByEmailAsync(string email)
             => await _context.Students
                 .FirstOrDefaultAsync(s => s.Email == email);
 
-        public async Task<bool> ExistsByEmailAsync(string email)
+        public async Task<bool> StudentExistsByEmailAsync(string email)
             => await _context.Students
                 .AnyAsync(s => s.Email == email);
 
-        public async Task AddAsync(Student student)
+        public async Task AddStudentAsync(Student student)
             => await _context.Students.AddAsync(student);
     }
 }

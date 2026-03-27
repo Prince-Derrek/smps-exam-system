@@ -4,8 +4,8 @@ namespace SMPS.Domain.Interfaces
 {
     public interface IStudentRepository
     {
-        Task<Student?> GetByEmailAsync(string email);
-        Task<bool> ExistsByEmailAsync(string email);
-        Task AddAsync(Student student);
+        Task<Student?> GetStudentByEmailAsync(string email);
+        Task<bool> StudentExistsByEmailAsync(string email);
+        Task AddStudentAsync(Student student);
     }
 }

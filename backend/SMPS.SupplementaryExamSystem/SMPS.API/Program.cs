@@ -28,7 +28,7 @@ builder.Services.AddScoped<IInvigilatorRepository, InvigilatorRepository>();
 // -------------------------------------------------------
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
-builder.Services.AddScoped<TokenService>();
+builder.Services.AddSingleton<TokenService>();
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

@@ -28,7 +28,7 @@ namespace SMPS.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] InvigilatorRegisterRequest req)
         {
-            if (await _invigilators.ExistsByEmailAsync(req.Email))
+            if (await _invigilators.InvigilatorExistsByEmailAsync(req.Email))
                 return Conflict(new { message = "Email already registered." });
 
             var invigilator = new Invigilator
@@ -40,24 +40,24 @@ namespace SMPS.API.Controllers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password)
             };
 
-            await _invigilators.AddAsync(invigilator);
+            await _invigilators.AddInvigilatorAsync(invigilator);
             await _uow.SaveChangesAsync(CancellationToken.None);
 
             var token = _tokenService.GenerateToken(invigilator.Id, invigilator.Email, "Invigilator");
-            return Ok(new AuthResponse(token, invigilator.Email, "Invigilator"));
+            return Ok(new AuthResponse(token, invigilator.Email, "Invigilator", invigilator.FullName));
         }
 
         // POST api/auth/invigilator/login
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest req)
         {
-            var invigilator = await _invigilators.GetByEmailAsync(req.Email);
+            var invigilator = await _invigilators.GetInvigilatorByEmailAsync(req.Email);
 
             if (invigilator is null || !BCrypt.Net.BCrypt.Verify(req.Password, invigilator.PasswordHash))
                 return Unauthorized(new { message = "Invalid credentials." });
 
             var token = _tokenService.GenerateToken(invigilator.Id, invigilator.Email, "Invigilator");
-            return Ok(new AuthResponse(token, invigilator.Email, "Invigilator"));
+            return Ok(new AuthResponse(token, invigilator.Email, "Invigilator", invigilator.FullName));
         }
     }
 }
