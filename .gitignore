@@ -15,8 +15,11 @@ appsettings.local.json
 
 # --- Node.js & React ---
 node_modules/
+build/
 frontend/dist/
 frontend/build/
+.env
+.env.local
 frontend/.env
 frontend/.env.local
 npm-debug.log*
@@ -26,5 +29,3 @@ yarn-error.log*
 
 # --- OS Specific ---
 Thumbs.db
-
-.env
