@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import logo from '../logo.png';
+import logo from '../logo.png'; 
 
 const Login = ({ onSwitch }) => {
-  const [studentId, setStudentId] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -12,13 +12,13 @@ const Login = ({ onSwitch }) => {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+    e.preventDefault(); 
+    setIsLoading(true); 
     setError('');
 
     try {
       const response = await axios.post('http://localhost:5000/api/auth/login', {
-        studentId,
+        email, 
         password
       });
 
@@ -30,9 +30,9 @@ const Login = ({ onSwitch }) => {
       navigate('/dashboard');
       
     } catch (err) {
-      setError("Invalid credentials. Please try again.");
+      setError(err.response?.data?.message || "Invalid email or password. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); 
     }
   };
 
@@ -42,15 +42,15 @@ const Login = ({ onSwitch }) => {
       <h2>Student Portal Login</h2>
       
       {}
-      {error && <p style={{ color: 'red', fontSize: '13px' }}>{error}</p>}
+      {error && <p style={{ color: '#d32f2f', fontSize: '13px', marginBottom: '10px' }}>{error}</p>}
       
       <form onSubmit={handleLogin}>
         <input 
-          type="text" 
-          placeholder="Registration Number" 
-          value={studentId}
-          onChange={(e) => setStudentId(e.target.value)}
-          disabled={isLoading} // 4.5: Disable input while loading
+          type="email" 
+          placeholder="University Email" 
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={isLoading} 
           required 
         />
         <input 
