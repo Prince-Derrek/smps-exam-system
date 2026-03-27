@@ -1,55 +1,30 @@
 import React, { useState } from 'react';
-import './App.css'; 
+import './App.css';
+import logo from './logo.png';
+import Register from './Register';
 
 function App() {
 
-  const [studentId, setStudentId] = useState('');
-  const [password, setPassword] = useState('');
-
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    alert("Attempting Login for ID: " + studentId);
-  
-  };
+  const [isLogin, setIsLogin] = useState(true);
 
   return (
     <div className="login-container">
-      <div className="login-card">
-        {/* JKUAT Logo */}
-        <img 
-          src={require('./logo.png')} 
-          alt="JKUAT Logo" 
-          style={{ width: '100px', marginBottom: '10px' }} 
-        />
-        
-        <h1>Student Portal</h1>
-
-        <form onSubmit={handleLogin}>
-          <input 
-            type="text" 
-            placeholder="Student ID" 
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)} 
-            required
-          />
-          
-          <input 
-            type="password" 
-            placeholder="Password" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)} 
-            required
-          />
-          
-          <button type="submit">Login to Portal</button>
-        </form>
-
-        {}
-        <p style={{ marginTop: '20px', fontSize: '13px', color: '#666' }}>
-          <a href="#forgot" style={{ color: '#2e7d32', textDecoration: 'none' }}>Forgot Password?</a>
-        </p>
-      </div>
+      {isLogin ? (
+        <div className="login-card">
+          <img src={logo} alt="JKUAT Logo" className="logo" />
+          <h2>Student Portal Login</h2>
+          <form>
+            <input type="text" placeholder="Registration Number" required />
+            <input type="password" placeholder="Password" required />
+            <button type="submit" className="login-button">Login</button>
+          </form>
+          <p className="switch-text">
+            Don't have an account? <span onClick={() => setIsLogin(false)} style={{color: '#2e7d32', cursor: 'pointer', fontWeight: 'bold'}}>Register here</span>
+          </p>
+        </div>
+      ) : (
+        <Register onSwitch={() => setIsLogin(true)} />
+      )}
     </div>
   );
 }
