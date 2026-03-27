@@ -10,7 +10,7 @@ const Login = ({ onSwitch }) => {
   const [error, setError] = useState('');
   
   const navigate = useNavigate();
-  const API_BASE_URL = 'https://localhost:7211';
+  const API_BASE_URL = 'http://localhost:5137';
 
   const handleLogin = async (e) => {
     e.preventDefault(); 
@@ -18,7 +18,7 @@ const Login = ({ onSwitch }) => {
     setError('');
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/student/login`, {
         email, 
         password
       });
