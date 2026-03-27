@@ -1,31 +1,41 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
-import logo from './logo.png';
+import Login from './components/Login';
 import Register from './Register';
 
 function App() {
-
+  // This state still controls whether the "/" path shows Login or Register
   const [isLogin, setIsLogin] = useState(true);
 
   return (
-    <div className="login-container">
-      {isLogin ? (
-        <div className="login-card">
-          <img src={logo} alt="JKUAT Logo" className="logo" />
-          <h2>Student Portal Login</h2>
-          <form>
-            <input type="text" placeholder="Registration Number" required />
-            <input type="password" placeholder="Password" required />
-            <button type="submit" className="login-button">Login</button>
-          </form>
-          <p className="switch-text">
-            Don't have an account? <span onClick={() => setIsLogin(false)} style={{color: '#2e7d32', cursor: 'pointer', fontWeight: 'bold'}}>Register here</span>
-          </p>
-        </div>
-      ) : (
-        <Register onSwitch={() => setIsLogin(true)} />
-      )}
-    </div>
+    <Router>
+      <div className="login-container">
+        <Routes>
+          {/* Main Route: Shows the Login/Register toggle at the root URL */}
+          <Route 
+            path="/" 
+            element={
+              isLogin ? (
+                <Login onSwitch={() => setIsLogin(false)} />
+              ) : (
+                <Register onSwitch={() => setIsLogin(true)} />
+              )
+            } 
+          />
+          
+          {/* Placeholder for Dashboard (Prince's requirement 5.4) */}
+          {/* When Login is successful, the 'navigate' function sends users here */}
+          <Route 
+            path="/dashboard" 
+            element={<div style={{color: 'white', fontSize: '24px'}}>Welcome to the Student Dashboard!</div>} 
+          />
+          
+          {/* Security: Redirect any unknown URL back to the home page */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
