@@ -10,6 +10,7 @@ const Login = ({ onSwitch }) => {
   const [error, setError] = useState('');
   
   const navigate = useNavigate();
+  const API_BASE_URL = 'https://localhost:7211';
 
   const handleLogin = async (e) => {
     e.preventDefault(); 
@@ -17,20 +18,19 @@ const Login = ({ onSwitch }) => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         email, 
         password
       });
 
       const token = response.data.token;
       sessionStorage.setItem('smps_jwt', token);
-
       setPassword('');
-
       navigate('/dashboard');
       
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid email or password. Please try again.");
+      console.error("Login Error:", err);
+      setError(err.response?.data?.message || "Connection to backend failed.");
     } finally {
       setIsLoading(false); 
     }
@@ -41,7 +41,6 @@ const Login = ({ onSwitch }) => {
       <img src={logo} alt="JKUAT Logo" className="logo" />
       <h2>Student Portal Login</h2>
       
-      {}
       {error && <p style={{ color: '#d32f2f', fontSize: '13px', marginBottom: '10px' }}>{error}</p>}
       
       <form onSubmit={handleLogin}>
@@ -63,7 +62,6 @@ const Login = ({ onSwitch }) => {
         />
         
         <button type="submit" className="login-button" disabled={isLoading}>
-          {}
           {isLoading ? "Authenticating..." : "Login"}
         </button>
       </form>
