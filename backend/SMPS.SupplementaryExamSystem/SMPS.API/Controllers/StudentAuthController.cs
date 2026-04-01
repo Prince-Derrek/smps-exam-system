@@ -26,7 +26,7 @@ namespace SMPS.API.Controllers
 
         // POST api/auth/student/register
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] StudentRegisterRequest req)
+        public async Task<IActionResult> Register([FromBody] StudentRegisterRequestDTO req)
         {
             if (await _students.StudentExistsByEmailAsync(req.Email))
                 return Conflict(new { message = "Email already registered." });

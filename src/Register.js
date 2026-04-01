@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
+import axios from 'axios'
 import logo from './logo.png';
+import { useNavigate } from 'react-router-dom';
+
+
 
 const Register = ({ onSwitch }) => {
   const [formData, setFormData] = useState({
@@ -7,23 +11,56 @@ const Register = ({ onSwitch }) => {
     lastName: '',
     regNumber: '',
     email: '',
-    course: '',
+    //course: '',
     password: '',
     confirmPassword: ''
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  const navigate = useNavigate();
+  const API_BASE_URL = 'http://localhost:5137';
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
+    
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      setError("Passwords do not match!");
       return;
     }
-    console.log("Registration Data:", formData);
-    alert(`Account created for ${formData.firstName} ${formData.lastName}`);
+
+    setIsLoading(true); 
+    setError('');
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/student/register`, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        regNumber: formData.regNumber,
+        email: formData.email,
+        //course: formData.course,
+        password: formData.password
+      });
+
+      // Assuming your register endpoint also returns a token to auto-login
+      const token = response.data.token;
+      if (token) {
+        sessionStorage.setItem('smps_jwt', token);
+      }
+      
+      navigate('/login');
+      
+    } catch (err) {
+      console.error("Registration Error:", err);
+      setError(err.response?.data?.message || "Connection to backend failed.");
+    } finally {
+      setIsLoading(false); 
+    }
   };
 
   return (
@@ -45,7 +82,7 @@ const Register = ({ onSwitch }) => {
 
         <input type="text" name="regNumber" placeholder="Registration Number" onChange={handleChange} required />
         <input type="email" name="email" placeholder="University Email" onChange={handleChange} required />
-        <input type="text" name="course" placeholder="Course of Study" onChange={handleChange} required />
+        {/*<input type="text" name="course" placeholder="Course of Study" onChange={handleChange} required />*/}
         <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
         <input type="password" name="confirmPassword" placeholder="Confirm Password" onChange={handleChange} required />
         
@@ -57,5 +94,4 @@ const Register = ({ onSwitch }) => {
     </div>
   );
 };
-
 export default Register;
