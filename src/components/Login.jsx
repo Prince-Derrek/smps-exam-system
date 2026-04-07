@@ -10,7 +10,7 @@ const Login = ({ onSwitch }) => {
   const [error, setError] = useState('');
   
   const navigate = useNavigate();
-  const API_BASE_URL = 'http://localhost:5137';
+  const API_BASE_URL = 'https://localhost:7211';
 
   const handleLogin = async (e) => {
     e.preventDefault(); 

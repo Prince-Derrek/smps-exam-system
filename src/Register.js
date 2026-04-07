@@ -9,7 +9,7 @@ const Register = ({ onSwitch }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    regNumber: '',
+    registrationNumber: '',
     email: '',
     //course: '',
     password: '',
@@ -20,7 +20,7 @@ const Register = ({ onSwitch }) => {
   const [error, setError] = useState('');
   
   const navigate = useNavigate();
-  const API_BASE_URL = 'http://localhost:5137';
+  const API_BASE_URL = 'https://localhost:7211';
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -37,11 +37,20 @@ const Register = ({ onSwitch }) => {
     setIsLoading(true); 
     setError('');
 
+    const payload = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      registrationNumber: formData.registrationNumber, // MUST MATCH THE DTO
+      email: formData.email,
+      password: formData.password
+    };
+    console.log("SENDING TO BACKEND:", payload);
+
     try {
       const response = await axios.post(`${API_BASE_URL}/api/auth/student/register`, {
         firstName: formData.firstName,
         lastName: formData.lastName,
-        regNumber: formData.regNumber,
+        regNumber: formData.registrationNumber,
         email: formData.email,
         //course: formData.course,
         password: formData.password
@@ -80,7 +89,7 @@ const Register = ({ onSwitch }) => {
           />
         </div>
 
-        <input type="text" name="regNumber" placeholder="Registration Number" onChange={handleChange} required />
+        <input type="text" name="registrationNumber" placeholder="Registration Number" onChange={handleChange} required />
         <input type="email" name="email" placeholder="University Email" onChange={handleChange} required />
         {/*<input type="text" name="course" placeholder="Course of Study" onChange={handleChange} required />*/}
         <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
