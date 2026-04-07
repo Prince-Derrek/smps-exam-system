@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SMPS.Application.DTOs;
 using SMPS.Application.DTOs.Auth;
 using SMPS.Domain.Entities;
 using SMPS.Domain.Interfaces;

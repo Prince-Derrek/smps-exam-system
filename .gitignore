@@ -8,6 +8,8 @@ obj/
 *.userosscache
 *.sln.docstates
 *.suo
+
+appsettings.json
 appsettings.Development.json
 appsettings.local.json
 *.db

@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import logo from '../logo.png'; 
+import { useNavigate, Link } from 'react-router-dom'; // ✅ Added Link
+import api from '../../services/api'; // ✅ Import our new central api service
+import logo from '../../assets/logo.png'; 
 
-const Login = ({ onSwitch }) => {
+const Login = () => { // ✅ Removed onSwitch prop
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
   const navigate = useNavigate();
-  const API_BASE_URL = 'http://localhost:5137';
 
   const handleLogin = async (e) => {
     e.preventDefault(); 
@@ -18,7 +17,8 @@ const Login = ({ onSwitch }) => {
     setError('');
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/student/login`, {
+      // ✅ Look how clean this is now! We just pass the relative path.
+      const response = await api.post('/api/auth/student/login', {
         email, 
         password
       });
@@ -67,7 +67,8 @@ const Login = ({ onSwitch }) => {
       </form>
       
       <p className="switch-text">
-        Don't have an account? <span onClick={onSwitch}>Register here</span>
+        {/* ✅ Replaced onClick span with a proper router Link */}
+        Don't have an account? <Link to="/register" style={{ color: 'blue', textDecoration: 'none' }}>Register here</Link>
       </p>
     </div>
   );
