@@ -1,9 +1,11 @@
 namespace SMPS.Application.DTOs.Auth
 {
-    public record InvigilatorRegisterRequest(
-        string StaffNumber,
-        string Email,
-        string FullName,
-        string Password
-    );
+    public class InvigilatorRegisterRequest()
+    {
+        public string StaffNumber { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+   
 }

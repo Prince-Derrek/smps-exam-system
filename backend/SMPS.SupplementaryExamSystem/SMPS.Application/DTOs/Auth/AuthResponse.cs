@@ -1,4 +1,4 @@
-namespace SMPS.Application.DTOs
+namespace SMPS.Application.DTOs.Auth
 {
     public record AuthResponse(string Token, string Email, string Role, string Name);
 }
