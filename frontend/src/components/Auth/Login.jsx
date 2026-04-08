@@ -26,7 +26,7 @@ const Login = () => { // ✅ Removed onSwitch prop
       const token = response.data.token;
       sessionStorage.setItem('smps_jwt', token);
       setPassword('');
-      navigate('/dashboard');
+      navigate('/student/dashboard');
       
     } catch (err) {
       console.error("Login Error:", err);
