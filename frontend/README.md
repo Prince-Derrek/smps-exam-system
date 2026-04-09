@@ -1,70 +1,88 @@
-# Getting Started with Create React App
+# SMPS Supplementary Exam System — Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React + Vite frontend for the SMPS Supplementary Exam System.
 
-## Available Scripts
+## Prerequisites
 
-In the project directory, you can run:
+- [Node.js v18+](https://nodejs.org/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for the database)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (for the backend)
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Full Local Setup (First Time)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 1. Start the Database
 
-### `npm test`
+```bash
+cd backend/SMPS.SupplementaryExamSystem
+docker compose down -v && docker compose up -d
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+> The `-v` flag wipes any stale volume. This is required on first setup or if you get a **password authentication failed** error. PostgreSQL only applies the `.env` credentials on a fresh volume.
 
-### `npm run build`
+### 2. Apply Database Migrations
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+cd backend/SMPS.SupplementaryExamSystem
+dotnet ef database update \
+  --project SMPS.Infrastructure/SMPS.Infrastructure.csproj \
+  --startup-project SMPS.API/SMPS.API.csproj
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 3. Start the Backend API
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+cd backend/SMPS.SupplementaryExamSystem/SMPS.API
+dotnet run --launch-profile http
+```
 
-### `npm run eject`
+- API runs at: `http://localhost:5137`
+- Swagger UI at: `http://localhost:5137/swagger`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 4. Start the Frontend
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- App runs at: `http://localhost:5173`
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
 
-## Learn More
+## Environment Variables
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+The frontend reads from `frontend/.env`:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```env
+VITE_API_BASE_URL=http://localhost:5137
+```
 
-### Code Splitting
+The backend reads from `backend/SMPS.SupplementaryExamSystem/SMPS.API/appsettings.json`:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5433;Database=smpsdb;Username=smps_user;Password=smps_pass"
+  },
+  "JwtSettings": {
+    "SecretKey": "YOUR_SECRET_KEY_MIN_32_CHARS",
+    "Issuer": "SMPS.API",
+    "Audience": "SMPS.Client",
+    "ExpiryMinutes": 60
+  }
+}
+```
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Common Issues
 
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `password authentication failed for user "smps_user"` | Stale Docker volume from a previous run | `docker compose down -v && docker compose up -d` |
+| `CORS policy blocked` | Frontend running on wrong port | Vite is pinned to `5173` in `vite.config.js` — ensure nothing else is using that port |
+| `address already in use` on port `5137` | Previous backend process didn't exit cleanly | Run `netstat -ano \| findstr :5137` then `taskkill /PID <pid> /F` |
+| `Failed to bind to address` | Same as above | Same fix as above |
