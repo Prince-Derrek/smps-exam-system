@@ -1,114 +1,103 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, CheckCircle, Clock, AlertCircle, ArrowRight, QrCode } from 'lucide-react';
-import { mockStudent, mockBookings, mockExamUnits } from '../../utils/mockData';
+import { useAuth } from '../../features/auth/AuthContext';
 import Badge from '../../components/ui/Badge';
 
-function StatCard({ icon: Icon, label, value, color }) {
+function StatCard({ icon: Icon, label, value, accent }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex items-center gap-4">
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
-        <Icon size={20} className="text-white" strokeWidth={2} />
+    <div className="bg-white rounded-xl p-5 flex items-center gap-4"
+      style={{ border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+      <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ background: accent === 'gold' ? 'rgba(245,166,35,0.12)' : 'rgba(26,107,58,0.08)' }}>
+        <Icon size={20} strokeWidth={2}
+          style={{ color: accent === 'gold' ? 'var(--gold-dark)' : 'var(--primary)' }} />
       </div>
       <div>
-        <p className="text-2xl font-bold text-slate-900">{value}</p>
-        <p className="text-sm text-slate-500 mt-0.5">{label}</p>
+        <p className="text-2xl font-bold" style={{ color: 'var(--text-heading)' }}>{value}</p>
+        <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{label}</p>
       </div>
     </div>
   );
 }
 
-function formatDate(isoString) {
-  return new Date(isoString).toLocaleDateString('en-KE', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
 export default function DashboardPage() {
-  const activeCount = mockBookings.filter((b) =>
-    ['Pending', 'AwaitingPayment'].includes(b.status)
-  ).length;
+  const { user } = useAuth();
 
-  const paidCount = mockBookings.filter((b) => b.status === 'Paid').length;
-  const failedCount = mockBookings.filter((b) => b.status === 'Failed').length;
-
-  const recent = [...mockBookings]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 3);
+  const activeCount = 0;
+  const paidCount = 0;
+  const failedCount = 0;
+  const recent = [];
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-6xl mx-auto">
-      {/* Welcome banner */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Welcome back, {mockStudent.firstName}
-        </h1>
-        <p className="text-slate-500 text-sm mt-1">
-          {mockStudent.registrationNumber} &nbsp;·&nbsp; {mockStudent.email}
-        </p>
+    <div className="px-4 lg:px-8 py-7 max-w-6xl mx-auto">
+
+      <div className="rounded-2xl p-6 mb-7 flex items-center justify-between gap-4 overflow-hidden relative"
+        style={{ background: 'var(--primary)' }}>
+        <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full opacity-10"
+          style={{ background: 'var(--gold)' }} />
+        <div className="absolute -right-4 bottom-0 w-32 h-32 rounded-full opacity-5"
+          style={{ background: 'white' }} />
+
+        <div className="relative z-10">
+          <p className="text-sm font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Welcome back</p>
+          <h1 className="text-2xl font-bold text-white leading-tight">{user?.firstName ?? 'Student'}</h1>
+          <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.55)' }}>
+            {user?.registrationNumber} &nbsp;·&nbsp; {user?.email}
+          </p>
+        </div>
+
+        <Link to="/student/book"
+          className="relative z-10 flex-shrink-0 hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
+          style={{ background: 'var(--gold)', color: 'var(--primary)' }}>
+          Book Exam <ArrowRight size={15} />
+        </Link>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-        <StatCard
-          icon={Clock}
-          label="Active Bookings"
-          value={activeCount}
-          color="bg-amber-500"
-        />
-        <StatCard
-          icon={CheckCircle}
-          label="Paid Tickets"
-          value={paidCount}
-          color="bg-green-600"
-        />
-        <StatCard
-          icon={AlertCircle}
-          label="Failed Payments"
-          value={failedCount}
-          color="bg-red-500"
-        />
-        <StatCard
-          icon={BookOpen}
-          label="Units Available"
-          value={mockExamUnits.length}
-          color="bg-blue-600"
-        />
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-7">
+        <StatCard icon={Clock}       label="Active Bookings" value={activeCount} accent="primary" />
+        <StatCard icon={CheckCircle} label="Paid Tickets"    value={paidCount}   accent="gold" />
+        <StatCard icon={AlertCircle} label="Failed Payments" value={failedCount} accent="primary" />
+        <StatCard icon={BookOpen}    label="Units Available" value="—"           accent="gold" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Recent Bookings */}
-        <div className="xl:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-            <h2 className="text-sm font-semibold text-slate-900">Recent Bookings</h2>
-            <Link
-              to="/student/bookings"
-              className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
-            >
+        <div className="xl:col-span-2 bg-white rounded-xl overflow-hidden"
+          style={{ border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+          <div className="flex items-center justify-between px-5 py-4"
+            style={{ borderBottom: '1px solid var(--border)' }}>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>Recent Bookings</h2>
+            <Link to="/student/bookings"
+              className="text-xs font-semibold flex items-center gap-1 hover:opacity-80"
+              style={{ color: 'var(--primary)' }}>
               View all <ArrowRight size={13} />
             </Link>
           </div>
 
           {recent.length === 0 ? (
-            <div className="flex flex-col items-center py-12 text-slate-400">
-              <BookOpen size={36} strokeWidth={1.5} className="mb-2" />
-              <p className="text-sm">No bookings yet</p>
+            <div className="flex flex-col items-center py-14">
+              <BookOpen size={36} strokeWidth={1.25} className="mb-3 opacity-30"
+                style={{ color: 'var(--text-muted)' }} />
+              <p className="text-sm font-medium" style={{ color: 'var(--text-body)' }}>No bookings yet</p>
+              <p className="text-xs mt-1 mb-5" style={{ color: 'var(--text-muted)' }}>
+                Register for your first supplementary exam unit.
+              </p>
+              <Link to="/student/book"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white"
+                style={{ background: 'var(--primary)' }}>
+                Book an Exam Unit <ArrowRight size={14} />
+              </Link>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
               {recent.map((booking) => (
-                <div
-                  key={booking.id}
-                  className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors"
-                >
+                <div key={booking.id} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900 truncate">
+                    <p className="text-sm font-medium truncate" style={{ color: 'var(--text-heading)' }}>
                       {booking.examUnit.unitTitle}
                     </p>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      {booking.examUnit.unitCode} &nbsp;·&nbsp; {formatDate(booking.createdAt)}
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                      {booking.examUnit.unitCode}
                     </p>
                   </div>
                   <Badge status={booking.status} />
@@ -118,41 +107,39 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Quick Actions panel */}
         <div className="flex flex-col gap-4">
-          {/* Book new unit CTA */}
-          <div className="bg-blue-600 rounded-xl p-5 flex flex-col">
-            <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center mb-3">
+          <div className="rounded-xl p-5 flex flex-col" style={{ background: 'var(--primary)' }}>
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-3"
+              style={{ background: 'rgba(255,255,255,0.1)' }}>
               <BookOpen size={20} className="text-white" />
             </div>
             <h3 className="text-white font-semibold text-sm mb-1">Register for an Exam</h3>
-            <p className="text-blue-100 text-xs leading-relaxed mb-4">
+            <p className="text-xs leading-relaxed mb-5" style={{ color: 'rgba(255,255,255,0.6)' }}>
               Browse available supplementary exam units and complete your booking.
             </p>
-            <Link
-              to="/student/book"
-              className="mt-auto inline-flex items-center justify-center gap-2 bg-white text-blue-700 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
-            >
+            <Link to="/student/book"
+              className="mt-auto inline-flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-lg"
+              style={{ background: 'var(--gold)', color: 'var(--primary)' }}>
               Book an Exam Unit <ArrowRight size={15} />
             </Link>
           </div>
 
-          {/* Ticket reminder */}
           {paidCount > 0 && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <div className="bg-white rounded-xl p-5"
+              style={{ border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-                  <QrCode size={18} className="text-green-600" />
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'rgba(245,166,35,0.12)' }}>
+                  <QrCode size={18} style={{ color: 'var(--gold-dark)' }} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-slate-900">Ticket Ready</p>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                    You have {paidCount} paid ticket{paidCount > 1 ? 's' : ''} ready for use at the exam venue.
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>Ticket Ready</p>
+                  <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                    You have {paidCount} paid ticket{paidCount > 1 ? 's' : ''} ready for the exam venue.
                   </p>
-                  <Link
-                    to="/student/bookings"
-                    className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 mt-2"
-                  >
+                  <Link to="/student/bookings"
+                    className="text-xs font-semibold flex items-center gap-1 mt-2 hover:opacity-80"
+                    style={{ color: 'var(--primary)' }}>
                     View tickets <ArrowRight size={12} />
                   </Link>
                 </div>

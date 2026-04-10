@@ -29,6 +29,9 @@ We strictly follow **Gitflow**.
 - **Functional Components:** Use functional components + Hooks only (No Class components).
 - **File Naming:** PascalCase for Components (`BookingWizard.jsx`), camelCase for hooks (`useAuth.js`).
 - **State:** Use Context API for global state, local state for UI interactions.
+- **Styling:** Use Tailwind CSS utility classes. For complex shared components, use Flowbite React.
+- **Design Tokens:** Never hardcode colors. Use CSS custom properties defined in `src/App.css` (e.g. `var(--primary)`, `var(--gold)`).
+- **No inline random colors:** Every color must come from the design token system.
 
 ##  pull Request (PR) Process
 1. Ensure your code builds locally.
