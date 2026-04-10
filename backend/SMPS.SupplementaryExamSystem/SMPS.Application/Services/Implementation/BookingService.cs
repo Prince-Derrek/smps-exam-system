@@ -161,14 +161,46 @@ namespace SMPS.Infrastructure.Services
                 throw new InvalidOperationException($"M-Pesa Error: {mpesaResponse.Message}");
             }
         }
-        public async Task<bool> ConfirmPaymentAsync(Guid bookingId, string transactionReference)
+        public async Task<bool> ConfirmPaymentAsync(string checkoutRequestId, int resultCode, string resultDesc, string? receiptNumber)
         {
-            var booking = await _bookings.GetByIdAsync(bookingId);
-            if (booking == null) return false;
+            // 1. Find the Payment Record using the golden ticket ID
+            var payment = await _payments.GetByCheckoutRequestIdAsync(checkoutRequestId);
+            if (payment == null)
+                return false; // Not our transaction
 
-            booking.Status = BookingStatus.Paid;
+            // 2. Find the associated Booking
+            var booking = await _bookings.GetByIdAsync(payment.BookingId);
+            if (booking == null)
+                return false;
+
+            // 3. Process the Result Code from Safaricom
+            if (resultCode == 0)
+            {
+                // 0 means SUCCESS!
+                payment.Status = PaymentStatus.Completed;
+                payment.MpesaReceiptNumber = receiptNumber;
+
+                booking.Status = BookingStatus.Paid;
+
+                // TODO: In Phase 6, we will generate the VerificationTicket (QR Code) here!
+            }
+            else if (resultCode == 1032)
+            {
+                // 1032 means the user clicked "Cancel" on the phone prompt
+                payment.Status = PaymentStatus.Cancelled;
+                booking.Status = BookingStatus.Failed;
+            }
+            else
+            {
+                // Any other code (insufficient funds, timeout, bad PIN)
+                payment.Status = PaymentStatus.Failed;
+                booking.Status = BookingStatus.Failed;
+            }
+
+            // 4. Save everything to the database
+            _payments.Update(payment);
             _bookings.Update(booking);
-            await _uow.SaveChangesAsync(CancellationToken.None);
+            await _uow.SaveChangesAsync(System.Threading.CancellationToken.None);
 
             return true;
         }

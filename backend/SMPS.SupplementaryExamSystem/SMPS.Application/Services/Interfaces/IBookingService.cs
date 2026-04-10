@@ -18,8 +18,9 @@ namespace SMPS.Application.Interfaces
         
         // Step 3: Initiate Payment (e.g., trigger STK push)
         Task<BookingResponseDto> InitiatePaymentAsync(Guid studentId, Guid bookingId, string phoneNumber);
-        
+
         // Step 4: Confirm Payment (usually called via Webhook/Callback)
-        Task<bool> ConfirmPaymentAsync(Guid bookingId, string transactionReference);
+        // Add this to IBookingService
+        Task<bool> ConfirmPaymentAsync(string checkoutRequestId, int resultCode, string resultDesc, string? receiptNumber);
     }
 }

@@ -28,6 +28,7 @@ builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IExamUnitRepository, ExamUnitRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IPaymentConnector, MpesaConnector>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 // -------------------------------------------------------
 // 3. JWT
