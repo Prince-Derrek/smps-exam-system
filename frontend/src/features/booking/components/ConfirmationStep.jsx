@@ -45,14 +45,14 @@ export default function ConfirmationStep({ unit, receiptNumber, ticketId, onBook
         </div>
 
         {/* QR Code */}
-        <div className="flex justify-center p-6 bg-white">
+        <div className="flex justify-center p-6" style={{ background: 'var(--card-bg)' }}>
           <div className="p-3 rounded-xl" style={{ border: '1px solid var(--border)' }}>
             <QRCode value={ticketId} size={160} />
           </div>
         </div>
 
         {/* Details */}
-        <div className="px-5 pb-5 space-y-2.5 text-sm">
+        <div className="px-5 pb-5 space-y-2.5 text-sm" style={{ background: 'var(--card-bg)' }}>
           <div className="border-t border-dashed mb-3" style={{ borderColor: 'var(--border)' }} />
           {[
             ['Student',       user?.firstName ?? '—'],
@@ -77,7 +77,7 @@ export default function ConfirmationStep({ unit, receiptNumber, ticketId, onBook
       <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
         <Link to="/student/bookings"
           className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold transition-colors"
-          style={{ border: '1.5px solid var(--border)', color: 'var(--text-body)', background: 'white' }}>
+          style={{ border: '1.5px solid var(--border)', color: 'var(--text-body)', background: 'var(--card-bg)' }}>
           <BookOpen size={15} /> View My Bookings
         </Link>
         <button onClick={onBookAnother}

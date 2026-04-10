@@ -52,7 +52,7 @@ export default function PaymentStep({ unit, onPaymentSuccess, onBack }) {
     width: '100%', padding: '10px 14px 10px 36px',
     border: '1.5px solid var(--border)', borderRadius: 8,
     fontSize: '0.9375rem', color: 'var(--text-heading)',
-    background: 'white', outline: 'none',
+    background: 'var(--input-bg)', outline: 'none',
   };
 
   return (
@@ -133,7 +133,7 @@ export default function PaymentStep({ unit, onPaymentSuccess, onBack }) {
             <button type="button" onClick={payStatus === 'failed' ? () => setPayStatus(null) : onBack}
               disabled={isProcessing}
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors"
-              style={{ border: '1.5px solid var(--border)', color: 'var(--text-body)', background: 'white', opacity: isProcessing ? 0.5 : 1 }}>
+              style={{ border: '1.5px solid var(--border)', color: 'var(--text-body)', background: 'var(--card-bg)', opacity: isProcessing ? 0.5 : 1 }}>
               <ArrowLeft size={15} />
               {payStatus === 'failed' ? 'Try Again' : 'Back'}
             </button>

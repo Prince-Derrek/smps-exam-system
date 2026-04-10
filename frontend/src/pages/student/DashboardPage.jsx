@@ -6,8 +6,8 @@ import Badge from '../../components/ui/Badge';
 
 function StatCard({ icon: Icon, label, value, accent }) {
   return (
-    <div className="bg-white rounded-xl p-5 flex items-center gap-4"
-      style={{ border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+    <div className="rounded-xl p-5 flex items-center gap-4"
+      style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
       <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
         style={{ background: accent === 'gold' ? 'rgba(245,166,35,0.12)' : 'rgba(26,107,58,0.08)' }}>
         <Icon size={20} strokeWidth={2}
@@ -62,8 +62,8 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 bg-white rounded-xl overflow-hidden"
-          style={{ border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <div className="xl:col-span-2 rounded-xl overflow-hidden"
+          style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="flex items-center justify-between px-5 py-4"
             style={{ borderBottom: '1px solid var(--border)' }}>
             <h2 className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>Recent Bookings</h2>
@@ -91,7 +91,10 @@ export default function DashboardPage() {
           ) : (
             <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
               {recent.map((booking) => (
-                <div key={booking.id} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors">
+                <div key={booking.id} className="flex items-center gap-4 px-5 py-4 transition-colors"
+                  style={{ cursor: 'default' }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--hover-bg)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: 'var(--text-heading)' }}>
                       {booking.examUnit.unitTitle}
@@ -125,8 +128,8 @@ export default function DashboardPage() {
           </div>
 
           {paidCount > 0 && (
-            <div className="bg-white rounded-xl p-5"
-              style={{ border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+            <div className="rounded-xl p-5"
+              style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
                   style={{ background: 'rgba(245,166,35,0.12)' }}>

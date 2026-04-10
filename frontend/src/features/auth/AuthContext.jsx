@@ -5,6 +5,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
+  // profile: { firstName/fullName, email, registrationNumber/staffNumber, role }
   const login = (token, profile) => {
     sessionStorage.setItem('smps_jwt', token);
     setUser(profile);
