@@ -109,4 +109,33 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// ---------------------------------------------------------
+// DATABASE MIGRATION & SEEDING BLOCK
+// ---------------------------------------------------------
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        // 1. Grab the database context from the DI container
+        var context = services.GetRequiredService<ApplicationDbContext>();
+
+        // 2. (Highly Recommended) Automatically apply any pending migrations
+        await context.Database.MigrateAsync();
+
+        // 3. Run your custom seeder!
+        await SMPS.Infrastructure.Data.Seeders.ExamUnitSeeder.SeedAsync(context);
+
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Database seeded successfully.");
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+    }
+}
+// ---------------------------------------------------------
+
 app.Run();

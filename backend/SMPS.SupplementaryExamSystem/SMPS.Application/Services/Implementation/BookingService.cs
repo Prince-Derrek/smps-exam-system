@@ -86,7 +86,10 @@ namespace SMPS.Infrastructure.Services
             { 
                 BookingId = booking.Id, 
                 Status = booking.Status.ToString(), 
-                Message = "Booking created successfully. Proceeding to payment..." 
+                Message = "Booking created successfully. Proceeding to payment...",
+                UnitCode = examUnit.UnitCode,
+                UnitTitle = examUnit.UnitTitle,
+                Fee = examUnit.StandardFee
             };
         }
 

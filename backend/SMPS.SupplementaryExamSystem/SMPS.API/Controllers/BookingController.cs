@@ -22,7 +22,7 @@ namespace SMPS.API.Controllers
         }
 
         // GET api/bookings/units
-        [HttpGet("units")]
+        [HttpGet("availableunits")]
         public async Task<IActionResult> GetAvailableUnits()
         {
             var studentId = GetCurrentStudentId();
@@ -34,7 +34,7 @@ namespace SMPS.API.Controllers
 
         // GET api/bookings/my
         // Restored from V1!
-        [HttpGet("my")]
+        [HttpGet("mybookings")]
         public async Task<IActionResult> GetMyBookings()
         {
             var studentId = GetCurrentStudentId();
@@ -46,7 +46,7 @@ namespace SMPS.API.Controllers
         }
 
         // POST api/bookings
-        [HttpPost]
+        [HttpPost("createbooking")]
         public async Task<IActionResult> CreateBooking([FromBody] CreateBookingRequestDto req)
         {
             var studentId = GetCurrentStudentId();
