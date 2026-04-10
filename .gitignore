@@ -22,8 +22,10 @@ frontend/dist/
 frontend/build/
 .env
 .env.local
+.env.production
 frontend/.env
 frontend/.env.local
+frontend/.env.production
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
