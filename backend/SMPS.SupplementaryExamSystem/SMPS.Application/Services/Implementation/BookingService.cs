@@ -60,8 +60,10 @@ namespace SMPS.Infrastructure.Services
                 UnitCode = b.ExamUnit.UnitCode,
                 UnitTitle = b.ExamUnit.UnitTitle,
                 Fee = b.ExamUnit.StandardFee,
-                Status = b.Status.ToString() // Convert the Enum to a String for the JSON!
-            });
+                Status = b.Status.ToString(),
+                PaymentReference = b.Payment?.CheckoutRequestId,
+                Message = b.Status == BookingStatus.Pending? "Awaiting Payment" : "Tracked"
+           });
         }
 
         public async Task<BookingResponseDto> CreateBookingAsync(Guid studentId, CreateBookingRequestDto request)
@@ -139,8 +141,6 @@ namespace SMPS.Infrastructure.Services
                 paymentRecord.CheckoutRequestId = mpesaResponse.CheckoutRequestID!;
                 booking.Status = BookingStatus.AwaitingPayment;
 
-                _payments.Update(paymentRecord);
-                _bookings.Update(booking);
                 await _uow.SaveChangesAsync(CancellationToken.None);
 
                 return new BookingResponseDto
@@ -198,8 +198,7 @@ namespace SMPS.Infrastructure.Services
             }
 
             // 4. Save everything to the database
-            _payments.Update(payment);
-            _bookings.Update(booking);
+            
             await _uow.SaveChangesAsync(System.Threading.CancellationToken.None);
 
             return true;
