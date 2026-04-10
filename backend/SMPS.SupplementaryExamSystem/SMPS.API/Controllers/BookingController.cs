@@ -75,14 +75,15 @@ namespace SMPS.API.Controllers
 
         // POST api/bookings/{id}/pay
         [HttpPost("{id}/pay")]
-        public async Task<IActionResult> InitiatePayment(Guid id)
+        public async Task<IActionResult> InitiatePayment(Guid id, [FromBody] InitiatePaymentRequestDto req)
         {
             var studentId = GetCurrentStudentId();
             if (studentId == Guid.Empty) return Unauthorized();
 
             try
             {
-                var response = await _bookingService.InitiatePaymentAsync(studentId, id);
+                // Pass the phone number into the service!
+                var response = await _bookingService.InitiatePaymentAsync(studentId, id, req.PhoneNumber);
                 return Ok(response);
             }
             catch (Exception ex)

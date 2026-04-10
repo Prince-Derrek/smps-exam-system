@@ -12,15 +12,21 @@ namespace SMPS.Infrastructure.Services
         private readonly IBookingRepository _bookings;
         private readonly IExamUnitRepository _examUnits;
         private readonly IUnitOfWork _uow;
+        private readonly IPaymentRepository _payments;      
+        private readonly IPaymentConnector _mpesaConnector;
 
         public BookingService(
             IBookingRepository bookings, 
             IExamUnitRepository examUnits, 
-            IUnitOfWork uow)
+            IUnitOfWork uow,
+            IPaymentRepository payments,
+            IPaymentConnector mpesaConnector)
         {
             _bookings = bookings;
             _examUnits = examUnits;
             _uow = uow;
+            _payments = payments;
+            _mpesaConnector = mpesaConnector;
         }
 
         public async Task<IEnumerable<ExamUnitDto>> GetAvailableExamUnitsAsync(Guid studentId)
@@ -93,30 +99,67 @@ namespace SMPS.Infrastructure.Services
             };
         }
 
-        public async Task<BookingResponseDto> InitiatePaymentAsync(Guid studentId, Guid bookingId)
+        public async Task<BookingResponseDto> InitiatePaymentAsync(Guid studentId, Guid bookingId, string phoneNumber)
         {
-            // 1. Fetch and validate
+            // 1. Fetch the booking (Ensure your Repository uses .Include(b => b.ExamUnit) for this!)
             var booking = await _bookings.GetByIdAsync(bookingId);
-            if (booking == null || booking.StudentId != studentId) 
+            if (booking == null || booking.StudentId != studentId)
                 throw new ArgumentException("Booking not found.");
 
-            // 2. Enforce State Machine rules
+            // 2. Enforce State Rules
             if (booking.Status != BookingStatus.Pending && booking.Status != BookingStatus.Failed)
                 throw new InvalidOperationException("This booking cannot be paid for in its current state.");
 
-            // 3. Mutate State
-            booking.Status = BookingStatus.AwaitingPayment;
-            
-            // 4. Save via Unit of Work
-            _bookings.Update(booking);
-            await _uow.SaveChangesAsync(CancellationToken.None);
-
-            return new BookingResponseDto 
-            { 
-                BookingId = booking.Id, 
-                Status = booking.Status.ToString(), 
-                Message = "Payment initiated. Please check your phone." 
+            // 3. Create the Payment Record (Pending State)
+            var paymentRecord = new PaymentRecord
+            {
+                Id = Guid.NewGuid(),
+                BookingId = bookingId,
+                PhoneNumber = phoneNumber,
+                Amount = booking.ExamUnit.StandardFee,
+                Status = PaymentStatus.Pending,
+                CheckoutRequestId = "PENDING_STK_PUSH" // Temporary placeholder
             };
+
+            await _payments.AddAsync(paymentRecord);
+
+            // 4. Trigger the Safaricom STK Push!
+            var mpesaResponse = await _mpesaConnector.InitiatePaymentAsync(
+                amount: paymentRecord.Amount,
+                phoneNumber: phoneNumber,
+                reference: booking.ExamUnit.UnitCode,
+                description: $"Fee for {booking.ExamUnit.UnitTitle}"
+            );
+
+            // 5. Handle the Daraja Response
+            if (mpesaResponse.IsSuccessful)
+            {
+                // STK Push was sent to the phone! 
+                // Save the golden ticket ID and update status.
+                paymentRecord.CheckoutRequestId = mpesaResponse.CheckoutRequestID!;
+                booking.Status = BookingStatus.AwaitingPayment;
+
+                _payments.Update(paymentRecord);
+                _bookings.Update(booking);
+                await _uow.SaveChangesAsync(CancellationToken.None);
+
+                return new BookingResponseDto
+                {
+                    BookingId = booking.Id,
+                    Status = booking.Status.ToString(),
+                    Message = mpesaResponse.Message,
+                    PaymentReference = mpesaResponse.CheckoutRequestID
+                };
+            }
+            else
+            {
+                // Safaricom rejected the request (e.g., invalid phone number)
+                paymentRecord.Status = PaymentStatus.Failed;
+                _payments.Update(paymentRecord);
+                await _uow.SaveChangesAsync(CancellationToken.None);
+
+                throw new InvalidOperationException($"M-Pesa Error: {mpesaResponse.Message}");
+            }
         }
         public async Task<bool> ConfirmPaymentAsync(Guid bookingId, string transactionReference)
         {
