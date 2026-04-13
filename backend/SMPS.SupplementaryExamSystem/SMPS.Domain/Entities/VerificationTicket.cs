@@ -10,7 +10,9 @@
 
         // Audit Trail
         public bool IsUsed { get; set; } = false;
-        
+
+        public DateTime? ScannedAt { get; set; }
+
         //Lecturer who scanned the ticket
         public Guid? InvigilatorId { get; set; }
         public Invigilator? Invigilator { get; set; }

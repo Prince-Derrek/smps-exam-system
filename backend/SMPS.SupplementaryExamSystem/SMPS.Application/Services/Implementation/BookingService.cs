@@ -14,19 +14,22 @@ namespace SMPS.Infrastructure.Services
         private readonly IUnitOfWork _uow;
         private readonly IPaymentRepository _payments;      
         private readonly IPaymentConnector _mpesaConnector;
+        private readonly IVerificationTicketRepository _tickets;
 
         public BookingService(
             IBookingRepository bookings, 
             IExamUnitRepository examUnits, 
             IUnitOfWork uow,
             IPaymentRepository payments,
-            IPaymentConnector mpesaConnector)
+            IPaymentConnector mpesaConnector,
+            IVerificationTicketRepository tickets)
         {
             _bookings = bookings;
             _examUnits = examUnits;
             _uow = uow;
             _payments = payments;
             _mpesaConnector = mpesaConnector;
+            _tickets = tickets;
         }
 
         public async Task<IEnumerable<ExamUnitDto>> GetAvailableExamUnitsAsync(Guid studentId)
@@ -183,6 +186,16 @@ namespace SMPS.Infrastructure.Services
                 booking.Status = BookingStatus.Paid;
 
                 // TODO: In Phase 6, we will generate the VerificationTicket (QR Code) here!
+                var ticket = new VerificationTicket
+                {
+                    Id = Guid.NewGuid(), // The unguessable key!
+                    BookingId = booking.Id,
+                    IsUsed = false
+                };
+
+                // Add it to the context. 
+                // It will be saved instantly when _uow.SaveChangesAsync() runs at the bottom of this method!
+                await _tickets.AddAsync(ticket);
             }
             else if (resultCode == 1032)
             {
