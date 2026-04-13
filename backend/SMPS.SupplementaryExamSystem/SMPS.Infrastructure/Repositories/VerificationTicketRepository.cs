@@ -31,5 +31,13 @@ namespace SMPS.Infrastructure.Repositories
                     .ThenInclude(b => b.ExamUnit) // We need the unit name too
                 .FirstOrDefaultAsync(t => t.Id == ticketId);
         }
+        
+        public async Task<VerificationTicket?> GetByBookingIdAsync(Guid bookingId)
+        {
+            return await _context.VerificationTickets
+                .Include(t => t.Booking)
+                    .ThenInclude(b => b.ExamUnit)
+                .FirstOrDefaultAsync(t => t.BookingId == bookingId);
+        }
     }
 }

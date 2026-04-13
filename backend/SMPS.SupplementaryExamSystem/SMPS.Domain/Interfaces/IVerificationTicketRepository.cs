@@ -6,5 +6,6 @@ namespace SMPS.Domain.Interfaces
     {
         Task<VerificationTicket?> GetByIdAsync(Guid ticketId);
         Task AddAsync(VerificationTicket ticket);
+        Task<VerificationTicket?> GetByBookingIdAsync(Guid bookingId);
     }
 }

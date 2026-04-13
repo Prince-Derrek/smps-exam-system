@@ -30,6 +30,7 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IPaymentConnector, MpesaConnector>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IVerificationTicketRepository, VerificationTicketRepository>();
+builder.Services.AddSingleton<IQRCodeService, QRCodeService>();
 
 // -------------------------------------------------------
 // 3. JWT
