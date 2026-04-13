@@ -12,13 +12,13 @@ namespace SMPS.Infrastructure.Data.Seeders
         public static async Task SeedAsync(ApplicationDbContext context)
         {
             // 1. Force the 1 Bob Test Unit into the DB if it is missing
-            if (!await context.ExamUnits.AnyAsync(u => u.UnitCode == "CS611"))
+            if (!await context.ExamUnits.AnyAsync(u => u.UnitCode == "CS612"))
             {
                 var testUnit = new ExamUnit
                 {
                     Id = Guid.NewGuid(),
-                    UnitCode = "CS611",
-                    UnitTitle = "Systems Programming ",
+                    UnitCode = "CS612",
+                    UnitTitle = "Systems Development ",
                     StandardFee = 1.00m
                 };
 

@@ -34,6 +34,7 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IVerificationTicketRepository, VerificationTicketRepository>();
 builder.Services.AddSingleton<IQRCodeService, QRCodeService>();
 builder.Services.AddScoped<IPdfDocumentService, PdfDocumentService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // -------------------------------------------------------
 // 3. JWT
