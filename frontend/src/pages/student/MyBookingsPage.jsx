@@ -109,7 +109,7 @@ export default function MyBookingsPage() {
             className="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors"
             style={activeFilter === f
               ? { background: 'var(--primary)', color: 'white' }
-              : { background: 'white', color: 'var(--text-body)', border: '1px solid var(--border)' }
+              : { background: 'var(--card-bg)', color: 'var(--text-body)', border: '1px solid var(--border)' }
             }>
             {f === 'AwaitingPayment' ? 'Awaiting Payment' : f}
           </button>
@@ -117,8 +117,8 @@ export default function MyBookingsPage() {
       </div>
 
       {/* Table card */}
-      <div className="bg-white rounded-xl overflow-hidden"
-        style={{ border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+      <div className="rounded-xl overflow-hidden"
+        style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
         {sorted.length === 0 ? <EmptyState /> : (
           <>
             {/* Desktop table */}
@@ -134,8 +134,10 @@ export default function MyBookingsPage() {
                 </thead>
                 <tbody>
                   {sorted.map((booking) => (
-                    <tr key={booking.id} className="hover:bg-slate-50 transition-colors"
-                      style={{ borderBottom: '1px solid var(--border)' }}>
+                    <tr key={booking.id} className="transition-colors"
+                      style={{ borderBottom: '1px solid var(--border)' }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--hover-bg)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
                       <td className="px-5 py-4">
                         <p className="font-semibold" style={{ color: 'var(--text-heading)' }}>
                           {booking.examUnit.unitTitle}

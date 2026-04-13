@@ -31,7 +31,7 @@ export default function UnitSelectionStep({ onSelect }) {
           value={query} onChange={(e) => setQuery(e.target.value)}
           className="w-full pl-9 pr-4 py-2.5 text-sm rounded-lg outline-none transition"
           style={{
-            border: '1.5px solid var(--border)', background: 'white',
+            border: '1.5px solid var(--border)', background: 'var(--input-bg)',
             color: 'var(--text-heading)',
           }}
           onFocus={(e) => { e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 0 0 3px rgba(26,107,58,0.12)'; }}
@@ -53,7 +53,7 @@ export default function UnitSelectionStep({ onSelect }) {
                 className="relative flex flex-col rounded-xl p-4 transition-all"
                 style={{
                   border: `1.5px solid var(--border)`,
-                  background: alreadyBooked ? 'var(--surface)' : 'white',
+                  background: alreadyBooked ? 'var(--surface)' : 'var(--card-bg)',
                   opacity: alreadyBooked ? 0.65 : 1,
                   cursor: alreadyBooked ? 'not-allowed' : 'pointer',
                 }}
