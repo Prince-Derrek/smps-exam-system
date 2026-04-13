@@ -37,6 +37,8 @@ namespace SMPS.Infrastructure.Repositories
             return await _context.VerificationTickets
                 .Include(t => t.Booking)
                     .ThenInclude(b => b.ExamUnit)
+                .Include(t => t.Booking)
+                    .ThenInclude(b => b.Student)
                 .FirstOrDefaultAsync(t => t.BookingId == bookingId);
         }
     }

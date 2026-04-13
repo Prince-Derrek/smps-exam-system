@@ -8,7 +8,9 @@ using SMPS.Infrastructure.Persistence;
 using SMPS.Infrastructure.Repositories;
 using SMPS.Infrastructure.Security;
 using SMPS.Application.Interfaces;
+using SMPS.Application.Services.Interfaces;
 using SMPS.Infrastructure.Services;
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +33,7 @@ builder.Services.AddScoped<IPaymentConnector, MpesaConnector>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IVerificationTicketRepository, VerificationTicketRepository>();
 builder.Services.AddSingleton<IQRCodeService, QRCodeService>();
+builder.Services.AddScoped<IPdfDocumentService, PdfDocumentService>();
 
 // -------------------------------------------------------
 // 3. JWT
