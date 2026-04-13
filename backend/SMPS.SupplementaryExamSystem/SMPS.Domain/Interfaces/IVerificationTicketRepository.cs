@@ -2,10 +2,10 @@
 
 namespace SMPS.Domain.Interfaces
 {
-    public interface ITicketRepository
+    public interface IVerificationTicketRepository
     {
         Task<VerificationTicket?> GetByIdAsync(Guid ticketId);
         Task AddAsync(VerificationTicket ticket);
-        void Update(VerificationTicket ticket);
+        Task<VerificationTicket?> GetByBookingIdAsync(Guid bookingId);
     }
 }
