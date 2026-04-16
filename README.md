@@ -1,4 +1,4 @@
-# 🎓 SMPS Exam Management System
+# 🎓 University Exam Management System
 
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
@@ -126,6 +126,6 @@ Upon running the backend for the first time, a default Administrator account is 
 *(Please ensure you change these credentials in `appsettings.json` before deploying to production).*
 
 ---
-## Developed for JKUAT - SMPS Exam System
+## Developed for Proprietary Use
 
 
