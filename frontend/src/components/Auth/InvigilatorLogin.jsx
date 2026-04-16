@@ -73,16 +73,6 @@ export default function InvigilatorLogin() {
             </button>
           </form>
 
-          <button type="button"
-            onClick={() => {
-              login('mock-invigilator-token', { fullName: 'Dr. Jane Mwangi', email: 'jane@jkuat.ac.ke', staffNumber: 'JKUAT-1234', role: 'Invigilator' });
-              navigate('/invigilator/scanner');
-            }}
-            className="w-full py-2.5 rounded-lg text-sm font-semibold mt-3"
-            style={{ border: '1.5px dashed #1A5276', color: '#1A5276', background: 'rgba(26,82,118,0.06)' }}>
-            🔧 Preview Invigilator Dashboard (Mock)
-          </button>
-
           <p className="auth-switch">
             <Link to="/" style={{ color: '#1A5276' }}>← Back to role selection</Link>
           </p>

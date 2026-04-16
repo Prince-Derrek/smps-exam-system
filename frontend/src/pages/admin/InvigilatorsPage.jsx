@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { UserCheck, Plus } from 'lucide-react';
-import api from '../../services/auth';
+import { getAdminInvigilators, registerInvigilator } from '../../services/adminService';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 
@@ -16,7 +16,8 @@ function AddInvigilatorModal({ onClose, onSaved }) {
     setLoading(true);
     setError('');
     try {
-      await api.post('/api/auth/invigilator/register', form);
+      // 👇 FIX: Use the service
+      await registerInvigilator(form);
       onSaved();
       onClose();
     } catch (err) {
@@ -72,16 +73,22 @@ export default function InvigilatorsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
-  const fetchInvigilators = () => {
+  const fetchInvigilators = async () => {
     setLoading(true);
-    // TODO: backend endpoint GET /api/admin/invigilators needed
-    api.get('/api/admin/invigilators')
-      .then((r) => setInvigilators(r.data))
-      .catch(() => setInvigilators([]))
-      .finally(() => setLoading(false));
+    try {
+      // 👇 FIX: Use the service
+      const data = await getAdminInvigilators();
+      setInvigilators(data);
+    } catch (err) {
+      console.error("Failed to fetch invigilators", err);
+      setInvigilators([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchInvigilators(); }, []);
+
 
   const columns = [
     { key: 'fullName', label: 'Name', render: (r) => (

@@ -14,7 +14,9 @@ namespace SMPS.Domain.Entities
         public ExamUnit ExamUnit { get; set; } = null!;
 
         public BookingStatus Status { get; set; } = BookingStatus.Pending;
-        
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
         // Navigation
         public PaymentRecord? Payment { get; set; }
         public VerificationTicket? Ticket { get; set; }

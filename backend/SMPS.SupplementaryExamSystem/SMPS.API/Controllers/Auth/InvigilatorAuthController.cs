@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SMPS.Application.DTOs;
 using SMPS.Application.DTOs.Auth;
@@ -9,6 +10,7 @@ namespace SMPS.API.Controllers.Auth
 {
     [ApiController]
     [Route("api/auth/invigilator")]
+    [Authorize(Roles = "Admin")] // Only Admins can register or manage invigilators
     public class InvigilatorAuthController : ControllerBase
     {
         private readonly IInvigilatorRepository _invigilators;

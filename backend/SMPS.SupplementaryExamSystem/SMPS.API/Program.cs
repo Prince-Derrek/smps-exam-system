@@ -15,6 +15,7 @@ using Hangfire.PostgreSql;
 using SMPS.Application.Features.Students.Queries.GetDashboard;
 using System.Security.Claims;
 using SMPS.Application.Services.Implementation;
+using SMPS.Infrastructure.Data.Seeders;
 
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
@@ -64,6 +65,13 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(GetStudentDashboardQuery).Assembly);
 });
 builder.Services.AddScoped<ITicketVerificationService, TicketVerificationService>();
+builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAdminExamUnitService, AdminExamUnitService>();
+builder.Services.AddScoped<IAdminStudentService, AdminStudentService>();
+builder.Services.AddScoped<IAdminBookingService, AdminBookingService>();
+builder.Services.AddScoped<IAdminPaymentService, AdminPaymentService>();
+builder.Services.AddScoped<IAdminInvigilatorService, AdminInvigilatorService>();
 
 
 // -------------------------------------------------------
@@ -149,6 +157,10 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.Configure<AdminSeedSettings>(
+    builder.Configuration.GetSection("AdminSeeding"));
+builder.Services.AddTransient<AdminSeeder>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -173,11 +185,13 @@ using (var scope = app.Services.CreateScope())
     {
         // 1. Grab the database context from the DI container
         var context = services.GetRequiredService<ApplicationDbContext>();
+        var adminSeeder = services.GetRequiredService<AdminSeeder>();
 
         // 2. (Highly Recommended) Automatically apply any pending migrations
         await context.Database.MigrateAsync();
 
         // 3. Run your custom seeder!
+        await adminSeeder.SeedAsync();
         await SMPS.Infrastructure.Data.Seeders.ExamUnitSeeder.SeedAsync(context);
 
         var logger = services.GetRequiredService<ILogger<Program>>();

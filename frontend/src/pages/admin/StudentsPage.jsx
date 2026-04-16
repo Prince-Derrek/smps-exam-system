@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Users } from 'lucide-react';
-import api from '../../services/auth';
+import { getAdminStudents } from '../../services/adminService';
 import DataTable from '../../components/ui/DataTable';
 
 const formatDate = (iso) => new Date(iso).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -24,11 +24,20 @@ export default function StudentsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: backend endpoint GET /api/admin/students needed
-    api.get('/api/admin/students')
-      .then((r) => setStudents(r.data))
-      .catch(() => setStudents([]))
-      .finally(() => setLoading(false));
+    const fetchStudents = async () => {
+      try {
+        setLoading(true);
+        // 👇 FIX: Use the service
+        const data = await getAdminStudents();
+        setStudents(data);
+      } catch (err) {
+        console.error("Failed to fetch students:", err);
+        setStudents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStudents();
   }, []);
 
   return (

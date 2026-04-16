@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../../services/auth';
+import { adminLogin } from '../../services/adminService';
 import logo from '../../assets/jkuat-logo.png';
 import { useAuth } from '../../features/auth/AuthContext';
 
@@ -20,11 +20,13 @@ export default function AdminLogin() {
     setIsLoading(true);
     setError('');
     try {
-      // TODO: backend endpoint POST /api/auth/admin/login needed
-      const response = await api.post('/api/auth/admin/login', { email, password });
-      const { token, name, email: userEmail } = response.data;
-      login(token, { fullName: name, email: userEmail, role: 'Admin' });
+      // 👇 2. Use your clean service function here!
+      const data = await adminLogin(email, password);
+      
+      // 3. Pass the returned data into your AuthContext
+      login(data.token, { fullName: data.name, email: data.email, role: 'Admin' });
       navigate('/admin/dashboard');
+      
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
     } finally {
@@ -56,10 +58,6 @@ export default function AdminLogin() {
 
           {error && <div className="auth-error">{error}</div>}
 
-          <div className="auth-error" style={{ background: 'rgba(74,35,90,0.06)', border: '1px solid rgba(74,35,90,0.2)', color: BRAND, marginBottom: 16 }}>
-            ⚠️ Admin backend endpoints are pending. UI is ready for integration.
-          </div>
-
           <form onSubmit={handleLogin}>
             <div className="field">
               <label htmlFor="email">Admin Email</label>
@@ -78,16 +76,6 @@ export default function AdminLogin() {
               {isLoading ? 'Signing in…' : 'Sign In'}
             </button>
           </form>
-
-          <button type="button"
-            onClick={() => {
-              login('mock-admin-token', { fullName: 'Dr. Admin User', email: 'admin@jkuat.ac.ke', role: 'Admin' });
-              navigate('/admin/dashboard');
-            }}
-            className="w-full py-2.5 rounded-lg text-sm font-semibold mt-3"
-            style={{ border: `1.5px dashed ${BRAND}`, color: BRAND, background: `${BRAND}08` }}>
-            🔧 Preview Admin Dashboard (Mock)
-          </button>
 
           <p className="auth-switch">
             <Link to="/" style={{ color: BRAND }}>← Back to role selection</Link>
