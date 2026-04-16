@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Users } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../services/auth';
 import DataTable from '../../components/ui/DataTable';
 
 const formatDate = (iso) => new Date(iso).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' });
