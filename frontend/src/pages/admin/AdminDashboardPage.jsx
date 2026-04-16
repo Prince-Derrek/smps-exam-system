@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Users, BookOpen, CreditCard, CheckCircle, TrendingUp, Loader2 } from 'lucide-react';
-import api from '../../services/auth';
+import { getAdminStats, getAdminTrends } from '../../services/adminService';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const BRAND = '#4A235A';
 
@@ -25,28 +26,34 @@ function StatCard({ icon: Icon, label, value, accent, loading }) {
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState(null);
+  const [trends, setTrends] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: backend endpoint GET /api/admin/stats needed
-    const fetchStats = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const res = await api.get('/api/admin/stats');
-        setStats(res.data);
-      } catch {
-        // Mock data for preview
-        setStats({ totalStudents: 142, totalBookings: 318, totalRevenue: '1,113,000', verifiedTickets: 87 });
+        setLoading(true);
+        // Fetch both endpoints concurrently for speed
+        const [statsData, trendsData] = await Promise.all([
+          getAdminStats(),
+          getAdminTrends(30) // Get last 30 days
+        ]);
+        
+        setStats(statsData);
+        setTrends(trendsData);
+      } catch (err) {
+        console.error("Failed to load admin dashboard data", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchStats();
+    fetchDashboardData();
   }, []);
 
   const cards = [
     { icon: Users,       label: 'Total Students',    value: stats?.totalStudents,    accent: BRAND },
     { icon: BookOpen,    label: 'Total Bookings',     value: stats?.totalBookings,    accent: '#1A5276' },
-    { icon: CreditCard,  label: 'Total Revenue (KES)',value: stats?.totalRevenue,     accent: 'var(--success)' },
+    { icon: CreditCard,  label: 'Total Revenue (KES)', value: Number(stats?.totalRevenue || 0).toLocaleString('en-KE'), accent: 'var(--success)' },
     { icon: CheckCircle, label: 'Verified Tickets',   value: stats?.verifiedTickets,  accent: '#F5A623' },
   ];
 
@@ -62,13 +69,44 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Placeholder for charts — backend data needed */}
-      <div className="rounded-xl p-8 flex flex-col items-center justify-center"
-        style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', minHeight: 240 }}>
-        <TrendingUp size={36} strokeWidth={1.25} className="mb-3 opacity-30" style={{ color: 'var(--text-muted)' }} />
-        <p className="text-sm font-medium" style={{ color: 'var(--text-body)' }}>Booking trends chart</p>
-        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-          Available once backend analytics endpoint is ready.
-        </p>
+      <div className="rounded-xl p-6"
+        style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+        
+        <div className="mb-6 flex items-center gap-2">
+          <TrendingUp size={20} style={{ color: BRAND }} />
+          <h2 className="text-base font-bold" style={{ color: 'var(--text-heading)' }}>30-Day Booking Trends</h2>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center items-center h-[280px]">
+            <Loader2 className="animate-spin text-muted" size={32} />
+          </div>
+        ) : trends.length === 0 ? (
+          <div className="flex justify-center items-center h-[280px] text-sm" style={{ color: 'var(--text-muted)' }}>
+            No booking data available for this period.
+          </div>
+        ) : (
+          /* 👇 WE DROPPED RESPONSIVE CONTAINER AND GRADIENTS FOR A HARDCODED TEST */
+          <div style={{ width: '100%', overflowX: 'auto', padding: '10px' }}>
+            <AreaChart 
+              width={800} 
+              height={280} 
+              data={trends} 
+              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="dateLabel" />
+              <YAxis />
+              <Tooltip />
+              <Area 
+                type="monotone" 
+                dataKey="bookingCount" 
+                stroke={BRAND} 
+                fill={BRAND} 
+              />
+            </AreaChart>
+          </div>
+        )}
       </div>
     </div>
   );

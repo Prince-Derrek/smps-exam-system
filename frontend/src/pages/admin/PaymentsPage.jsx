@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { CreditCard } from 'lucide-react';
-import api from '../../services/auth';
+import { getAdminPayments } from '../../services/adminService';
 import DataTable from '../../components/ui/DataTable';
 
 const formatDate = (iso) => new Date(iso).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -44,11 +44,20 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: backend endpoint GET /api/admin/payments needed
-    api.get('/api/admin/payments')
-      .then((r) => setPayments(r.data))
-      .catch(() => setPayments([]))
-      .finally(() => setLoading(false));
+    const fetchPayments = async () => {
+      try {
+        setLoading(true);
+        // 👇 FIX: Use the service
+        const data = await getAdminPayments();
+        setPayments(data);
+      } catch (err) {
+        console.error("Failed to fetch payments:", err);
+        setPayments([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPayments();
   }, []);
 
   return (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ClipboardList } from 'lucide-react';
-import api from '../../services/auth';
+import { getAdminBookings } from '../../services/adminService';
 import DataTable from '../../components/ui/DataTable';
 import Badge from '../../components/ui/Badge';
 
@@ -30,11 +30,20 @@ export default function BookingsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: backend endpoint GET /api/admin/bookings needed
-    api.get('/api/admin/bookings')
-      .then((r) => setBookings(r.data))
-      .catch(() => setBookings([]))
-      .finally(() => setLoading(false));
+    const fetchBookings = async () => {
+      try {
+        setLoading(true);
+        // 👇 FIX: Use the service
+        const data = await getAdminBookings();
+        setBookings(data);
+      } catch (err) {
+        console.error("Failed to fetch bookings:", err);
+        setBookings([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBookings();
   }, []);
 
   return (

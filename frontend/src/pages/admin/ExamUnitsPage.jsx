@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BookOpen, Plus, Pencil } from 'lucide-react';
-import api from '../../services/auth';
+import { getAdminExamUnits, createExamUnit, updateExamUnit } from '../../services/adminService';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 
@@ -18,16 +18,16 @@ function ExamUnitModal({ unit, onClose, onSaved }) {
     setLoading(true);
     setError('');
     try {
-      // TODO: backend endpoints POST/PUT /api/admin/exam-units needed
+      // 👇 FIX: Use the service functions
       if (isEdit) {
-        await api.put(`/api/admin/exam-units/${unit.id}`, form);
+        await updateExamUnit(unit.id, form);
       } else {
-        await api.post('/api/admin/exam-units', form);
+        await createExamUnit(form);
       }
       onSaved();
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message ?? 'Failed to save. Backend endpoint may not be ready.');
+      setError(err.response?.data?.message ?? 'Failed to save.');
     } finally {
       setLoading(false);
     }
@@ -75,14 +75,20 @@ export default function ExamUnitsPage() {
   const [modalUnit, setModalUnit] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  const fetchUnits = () => {
+  const fetchUnits = async () => {
     setLoading(true);
-    // TODO: backend endpoint GET /api/admin/exam-units needed
-    api.get('/api/admin/exam-units')
-      .then((r) => setUnits(r.data))
-      .catch(() => setUnits([]))
-      .finally(() => setLoading(false));
+    try {
+      // 👇 FIX: Use the service function
+      const data = await getAdminExamUnits();
+      setUnits(data);
+    } catch (err) {
+      setUnits([]);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => { fetchUnits(); }, []);
 
   useEffect(() => { fetchUnits(); }, []);
 
