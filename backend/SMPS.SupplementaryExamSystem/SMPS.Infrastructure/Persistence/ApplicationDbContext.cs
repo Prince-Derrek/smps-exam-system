@@ -17,6 +17,7 @@ namespace SMPS.Infrastructure.Persistence
         public DbSet<PaymentRecord> PaymentRecords { get; set; }
         public DbSet<VerificationTicket> VerificationTickets { get; set; }
         public DbSet<Invigilator> Invigilators { get; set; }
+        public DbSet<Admin> Admins { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -68,6 +69,10 @@ namespace SMPS.Infrastructure.Persistence
                 .WithMany(i => i.ScannedTickets)
                 .HasForeignKey(t => t.InvigilatorId)
                 .OnDelete(DeleteBehavior.SetNull); // If an invigilator leaves, don't delete the scan history
+
+            modelBuilder.Entity<Admin>()
+                .HasIndex(a => a.Email)
+                .IsUnique();
 
             // --------------------------------------------------------
             // 3. PRECISION FORMATTING (PostgreSQL optimization)

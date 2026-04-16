@@ -11,6 +11,7 @@ namespace SMPS.Application.Interfaces
         DbSet<PaymentRecord> PaymentRecords { get; }
         DbSet<VerificationTicket> VerificationTickets { get; }
         DbSet<Invigilator> Invigilators { get; }
+        DbSet<Admin> Admins { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
