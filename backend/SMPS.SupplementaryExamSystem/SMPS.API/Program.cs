@@ -14,6 +14,7 @@ using Hangfire;
 using Hangfire.PostgreSql;
 using SMPS.Application.Features.Students.Queries.GetDashboard;
 using System.Security.Claims;
+using SMPS.Application.Services.Implementation;
 
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
@@ -62,6 +63,7 @@ builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(GetStudentDashboardQuery).Assembly);
 });
+builder.Services.AddScoped<ITicketVerificationService, TicketVerificationService>();
 
 
 // -------------------------------------------------------
