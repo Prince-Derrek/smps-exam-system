@@ -1,4 +1,4 @@
-﻿namespace SMPS.Application.Interfaces
+﻿namespace SMPS.Application.Services.Interfaces
 {
     public interface IQRCodeService
     {

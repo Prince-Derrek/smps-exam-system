@@ -10,7 +10,12 @@ using SMPS.Infrastructure.Security;
 using SMPS.Application.Interfaces;
 using SMPS.Application.Services.Interfaces;
 using SMPS.Infrastructure.Services;
+using Hangfire;
+using Hangfire.PostgreSql;
+
+
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +24,19 @@ var builder = WebApplication.CreateBuilder(args);
 // -------------------------------------------------------
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// 1. Add Hangfire Database Connection
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    // UPDATED: Using the new options pattern to fix the obsolete warning
+    .UsePostgreSqlStorage(options =>
+        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))
+    ));
+
+// 2. Add the Hangfire Server
+builder.Services.AddHangfireServer();
 
 // -------------------------------------------------------
 // 2. REPOSITORIES & UNIT OF WORK
@@ -35,6 +53,7 @@ builder.Services.AddScoped<IVerificationTicketRepository, VerificationTicketRepo
 builder.Services.AddSingleton<IQRCodeService, QRCodeService>();
 builder.Services.AddScoped<IPdfDocumentService, PdfDocumentService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
 
 // -------------------------------------------------------
 // 3. JWT
