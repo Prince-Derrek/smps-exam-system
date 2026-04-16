@@ -90,7 +90,7 @@ SMPS-Exam-System/
 2. Update the `appsettings.Development.json` file with your PostgreSQL connection string and JWT Secret Key. Check appsettings.json for the required format.
 3. Apply Entity Framework migrations to build the database:
    ```bash
-   dotnet ef database update --project ../SMPS.Infrastructure --startup-project .
+   dotnet ef database update --project ../SMPS.Infrastructure --startup-project ./SMPS.API
    ```
 4. Run the API:
    ```bash
