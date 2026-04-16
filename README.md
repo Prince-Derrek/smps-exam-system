@@ -65,7 +65,11 @@ SMPS-Exam-System/
         ├── components/           # Reusable UI components (Modals, Tables)
         ├── features/             # Auth Context and specialized logic
         ├── pages/                # Admin, Student, and Invigilator views
-        └── services/             # Axios API interceptors and endpoint logic
+        ├── layouts/              # Common page layouts and navigation
+        ├── utils/                # Helper functions and constants
+        ├── assets/               # Images, icons, and static files
+        ├── services/             # Axios API interceptors and endpoint logic
+        └── App.jsx                    # Main application entry point with routing
 ```
 
 ---
@@ -83,7 +87,7 @@ SMPS-Exam-System/
    ```bash
    cd backend/src/SMPS.API
    ```
-2. Update the `appsettings.Development.json` file with your PostgreSQL connection string and JWT Secret Key.
+2. Update the `appsettings.Development.json` file with your PostgreSQL connection string and JWT Secret Key. Check appsettings.json for the required format.
 3. Apply Entity Framework migrations to build the database:
    ```bash
    dotnet ef database update --project ../SMPS.Infrastructure --startup-project .
@@ -116,12 +120,12 @@ SMPS-Exam-System/
 Upon running the backend for the first time, a default Administrator account is seeded into the database for testing and configuration:
 
 - **Role:** Administrator
-- **Email:** `admin@jkuat.ac.ke`
-- **Password:** `SuperSecretPassword123!`
+- **Email:** `THE_SEEDED_ADMIN_EMAIL_`
+- **Password:** `THE_SEEDED_ADMIN_PASSWORD_`
 
 *(Please ensure you change these credentials in `appsettings.json` before deploying to production).*
 
 ---
-*Developed for JKUAT - SMPS Exam System*
-```
+## Developed for JKUAT - SMPS Exam System
+
 
