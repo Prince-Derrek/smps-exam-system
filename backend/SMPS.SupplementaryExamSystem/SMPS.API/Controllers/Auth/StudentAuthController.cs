@@ -5,7 +5,7 @@ using SMPS.Domain.Entities;
 using SMPS.Domain.Interfaces;
 using SMPS.Infrastructure.Security;
 
-namespace SMPS.API.Controllers
+namespace SMPS.API.Controllers.Auth
 {
     [ApiController]
     [Route("api/auth/student")]
