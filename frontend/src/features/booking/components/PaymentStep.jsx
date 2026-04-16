@@ -1,25 +1,8 @@
 import React, { useState } from 'react';
 import { Smartphone, Loader2, CheckCircle2, XCircle, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { initiatePayment } from '../../../services/bookingService';
 
 const formatCurrency = (n) => `KES ${n.toLocaleString('en-KE')}`;
-
-async function simulateMpesaFlow(onStatusChange) {
-  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-  onStatusChange('sending');
-  await delay(1500);
-  onStatusChange('waiting');
-  await delay(3000);
-  if (Math.random() > 0.1) {
-    onStatusChange('success');
-    return {
-      success: true,
-      receiptNumber: `RGW${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
-      ticketId: crypto.randomUUID(),
-    };
-  }
-  onStatusChange('failed');
-  return { success: false };
-}
 
 const statusMessages = {
   sending: 'Initiating M-Pesa STK push…',
@@ -28,24 +11,54 @@ const statusMessages = {
   failed:  'Payment was not completed. Please try again.',
 };
 
-export default function PaymentStep({ unit, onPaymentSuccess, onBack }) {
+export default function PaymentStep({ unit, bookingId, onPaymentSuccess, onBack }) {
   const [phone, setPhone] = useState('');
-  const [payStatus, setPayStatus] = useState(null);
+  const [payStatus, setPayStatus] = useState(null); // 'sending', 'success', 'failed'
   const [error, setError] = useState('');
 
-  const isProcessing = payStatus === 'sending' || payStatus === 'waiting';
+  const isProcessing = payStatus === 'sending';
 
-  const validatePhone = (v) => /^(07|01)\d{8}$/.test(v.replace(/\s/g, ''));
+  // Validates: 07..., 01..., 2547..., 2541..., or +2547..., +2541...
+const validatePhone = (v) => /^(?:254|\+254|0)(7|1)\d{8}$/.test(v);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    if (!validatePhone(phone)) {
-      setError('Enter a valid Kenyan mobile number (e.g. 0712 345 678).');
-      return;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
+
+  let rawPhone = phone.replace(/\s/g, '');
+
+  if (!validatePhone(rawPhone)) {
+    setError('Enter a valid Kenyan mobile number (e.g. 0712 345 678).');
+    return;
+  }
+
+  let formattedPhone = rawPhone;
+  
+  if (formattedPhone.startsWith('+')) {
+    formattedPhone = formattedPhone.slice(1); // Strip the '+'
+  } else if (formattedPhone.startsWith('0')) {
+    formattedPhone = '254' + formattedPhone.slice(1); // Replace '0' with '254'
+  }
+
+  try {
+    setPayStatus('sending');
+    const response = await initiatePayment(bookingId, formattedPhone);
+    
+      setPayStatus('success');
+      
+      // Note: Because M-Pesa is async, we pass the CheckoutRequestID as the receipt placeholder for now.
+      // In Phase 1.4, the dashboard will pull the real receipt from the DB once Safaricom calls back.
+      setTimeout(() => {
+        onPaymentSuccess({ 
+          receiptNumber: response.paymentReference || 'PENDING-SMS', 
+          ticketId: response.bookingId 
+        });
+      }, 2000);
+
+    } catch (err) {
+      setPayStatus('failed');
+      setError(err.response?.data?.message || 'M-Pesa STK push failed.');
     }
-    const result = await simulateMpesaFlow(setPayStatus);
-    if (result.success) onPaymentSuccess({ receiptNumber: result.receiptNumber, ticketId: result.ticketId });
   };
 
   const inputStyle = {
