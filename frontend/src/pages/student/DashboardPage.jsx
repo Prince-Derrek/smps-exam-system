@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, CheckCircle, Clock, AlertCircle, ArrowRight, QrCode } from 'lucide-react';
+import { BookOpen, CheckCircle, Clock, AlertCircle, ArrowRight, QrCode, Loader } from 'lucide-react';
 import { useAuth } from '../../features/auth/AuthContext';
 import Badge from '../../components/ui/Badge';
+import { fetchDashboardData } from '../../services/dashboardService';
 
 function StatCard({ icon: Icon, label, value, accent }) {
   return (
@@ -23,11 +24,59 @@ function StatCard({ icon: Icon, label, value, accent }) {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  
+  // State for dynamic data
+  const [dashboardData, setDashboardData] = useState({
+    activeCount: 0,
+    paidCount: 0,
+    failedCount: 0,
+    availableUnitsCount: 0,
+    recentBookings: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const activeCount = 0;
-  const paidCount = 0;
-  const failedCount = 0;
-  const recent = [];
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchDashboardData(); 
+        setDashboardData({
+          activeCount: data.activeCount || 0,
+          paidCount: data.paidCount || 0,
+          failedCount: data.failedCount || 0,
+          availableUnitsCount: data.availableUnitsCount || 0,
+          recentBookings: data.recentBookings || []
+        });
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+        setError("Failed to load dashboard data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboard();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader className="animate-spin" size={32} style={{ color: 'var(--primary)' }} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-red-500 text-center p-4 font-medium">{error}</div>
+      </div>
+    );
+  }
+
+  // Map state to variables for the JSX
+  const { activeCount, paidCount, failedCount, availableUnitsCount, recentBookings } = dashboardData;
 
   return (
     <div className="px-4 lg:px-8 py-7 max-w-6xl mx-auto">
@@ -58,7 +107,7 @@ export default function DashboardPage() {
         <StatCard icon={Clock}       label="Active Bookings" value={activeCount} accent="primary" />
         <StatCard icon={CheckCircle} label="Paid Tickets"    value={paidCount}   accent="gold" />
         <StatCard icon={AlertCircle} label="Failed Payments" value={failedCount} accent="primary" />
-        <StatCard icon={BookOpen}    label="Units Available" value="—"           accent="gold" />
+        <StatCard icon={BookOpen}    label="Units Available" value={availableUnitsCount} accent="gold" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -74,7 +123,7 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          {recent.length === 0 ? (
+          {recentBookings.length === 0 ? (
             <div className="flex flex-col items-center py-14">
               <BookOpen size={36} strokeWidth={1.25} className="mb-3 opacity-30"
                 style={{ color: 'var(--text-muted)' }} />
@@ -90,17 +139,17 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
-              {recent.map((booking) => (
+              {recentBookings.map((booking) => (
                 <div key={booking.id} className="flex items-center gap-4 px-5 py-4 transition-colors"
                   style={{ cursor: 'default' }}
                   onMouseEnter={(e) => e.currentTarget.style.background = 'var(--hover-bg)'}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: 'var(--text-heading)' }}>
-                      {booking.examUnit.unitTitle}
+                      {booking.unitTitle} 
                     </p>
                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                      {booking.examUnit.unitCode}
+                      {booking.unitCode} 
                     </p>
                   </div>
                   <Badge status={booking.status} />
