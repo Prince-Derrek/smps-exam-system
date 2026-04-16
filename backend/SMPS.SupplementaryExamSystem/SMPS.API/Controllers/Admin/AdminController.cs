@@ -18,13 +18,20 @@ namespace SMPS.API.Controllers
         private readonly IAuthService _authService; 
         private readonly IAdminExamUnitService _examUnitService;
         private readonly IAdminStudentService _studentService;
+        private readonly IAdminBookingService _bookingService;
 
-        public AdminController(IAdminDashboardService dashboardService, IAuthService authService, IAdminExamUnitService examUnitService, IAdminStudentService studentService)
+        public AdminController(
+            IAdminDashboardService dashboardService, 
+            IAuthService authService, 
+            IAdminExamUnitService examUnitService, 
+            IAdminStudentService studentService, 
+            IAdminBookingService bookingService)
         {
             _dashboardService = dashboardService;
             _authService = authService;
             _examUnitService = examUnitService;
             _studentService = studentService;
+            _bookingService = bookingService;
         }
 
         
@@ -89,6 +96,13 @@ namespace SMPS.API.Controllers
         {
             var students = await _studentService.GetAllStudentsAsync();
             return Ok(students);
+        }
+        
+        [HttpGet("bookings")]
+        public async Task<IActionResult> GetBookings()
+        {
+            var bookings = await _bookingService.GetAllBookingsAsync();
+            return Ok(bookings);
         }
     }
 }

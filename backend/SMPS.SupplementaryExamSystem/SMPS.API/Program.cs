@@ -69,6 +69,7 @@ builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminExamUnitService, AdminExamUnitService>();
 builder.Services.AddScoped<IAdminStudentService, AdminStudentService>();
+builder.Services.AddScoped<IAdminBookingService, AdminBookingService>();
 
 
 // -------------------------------------------------------
