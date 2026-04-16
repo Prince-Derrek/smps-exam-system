@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { UserCheck, Plus } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../services/auth';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 

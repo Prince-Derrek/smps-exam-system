@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2, XCircle, Loader2, RotateCcw } from 'lucide-react';
 import ScannerWidget from '../features/verification/components/ScannerWidget';
-import api from '../services/api';
+import api from '../services/auth';
 
 const BRAND = '#1A5276';
 

@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SMPS.Application.Interfaces;
 using SMPS.Domain.Entities;
 
 namespace SMPS.Infrastructure.Persistence
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : DbContext, IApplicationDbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

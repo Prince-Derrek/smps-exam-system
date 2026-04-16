@@ -12,6 +12,8 @@ using SMPS.Application.Services.Interfaces;
 using SMPS.Infrastructure.Services;
 using Hangfire;
 using Hangfire.PostgreSql;
+using SMPS.Application.Features.Students.Queries.GetDashboard;
+using System.Security.Claims;
 
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
@@ -25,7 +27,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 1. Add Hangfire Database Connection
+builder.Services.AddScoped<IApplicationDbContext>(provider =>
+    provider.GetRequiredService<ApplicationDbContext>());
+
 builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
@@ -54,6 +58,11 @@ builder.Services.AddSingleton<IQRCodeService, QRCodeService>();
 builder.Services.AddScoped<IPdfDocumentService, PdfDocumentService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(GetStudentDashboardQuery).Assembly);
+});
+
 
 // -------------------------------------------------------
 // 3. JWT
@@ -63,23 +72,38 @@ builder.Services.Configure<JwtSettings>(
 builder.Services.AddSingleton<TokenService>();
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings.Issuer,
-           // ValidAudience = jwtSettings.Audience,
+            ValidAudience = jwtSettings.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+                Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+            NameClaimType = ClaimTypes.NameIdentifier,
+            RoleClaimType = ClaimTypes.Role
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Creates the "student" policy that your controller is looking for
+    options.AddPolicy("student", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Student");
+    });
+});
 
 // -------------------------------------------------------
 // 4. API

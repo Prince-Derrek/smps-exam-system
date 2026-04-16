@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Users, BookOpen, CreditCard, CheckCircle, TrendingUp, Loader2 } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../services/auth';
 
 const BRAND = '#4A235A';
 
