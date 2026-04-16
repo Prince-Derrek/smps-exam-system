@@ -70,6 +70,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminExamUnitService, AdminExamUnitService>();
 builder.Services.AddScoped<IAdminStudentService, AdminStudentService>();
 builder.Services.AddScoped<IAdminBookingService, AdminBookingService>();
+builder.Services.AddScoped<IAdminPaymentService, AdminPaymentService>();
+builder.Services.AddScoped<IAdminInvigilatorService, AdminInvigilatorService>();
 
 
 // -------------------------------------------------------

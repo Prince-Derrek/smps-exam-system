@@ -19,19 +19,26 @@ namespace SMPS.API.Controllers
         private readonly IAdminExamUnitService _examUnitService;
         private readonly IAdminStudentService _studentService;
         private readonly IAdminBookingService _bookingService;
+        private readonly IAdminPaymentService _paymentService;
+        private readonly IAdminInvigilatorService _invigilatorService; // 👇 Add this
 
         public AdminController(
             IAdminDashboardService dashboardService, 
             IAuthService authService, 
             IAdminExamUnitService examUnitService, 
             IAdminStudentService studentService, 
-            IAdminBookingService bookingService)
+            IAdminBookingService bookingService,
+            IAdminPaymentService paymentService,
+            IAdminInvigilatorService invigilatorService)
         {
             _dashboardService = dashboardService;
             _authService = authService;
             _examUnitService = examUnitService;
             _studentService = studentService;
             _bookingService = bookingService;
+            _paymentService = paymentService;       
+            _bookingService = bookingService;
+            _invigilatorService = invigilatorService;
         }
 
         
@@ -103,6 +110,41 @@ namespace SMPS.API.Controllers
         {
             var bookings = await _bookingService.GetAllBookingsAsync();
             return Ok(bookings);
+        }
+        
+        [HttpGet("payments")]
+        public async Task<IActionResult> GetPayments()
+        {
+            var payments = await _paymentService.GetAllPaymentsAsync();
+            return Ok(payments);
+        }
+        
+        [HttpGet("invigilators")]
+        public async Task<IActionResult> GetInvigilators()
+        {
+            var invigilators = await _invigilatorService.GetAllInvigilatorsAsync();
+            return Ok(invigilators);
+        }
+
+        [HttpPost("invigilators")]
+        public async Task<IActionResult> CreateInvigilator([FromBody] CreateInvigilatorDto dto)
+        {
+            try
+            {
+                var result = await _invigilatorService.CreateInvigilatorAsync(dto);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("trends")]
+        public async Task<IActionResult> GetTrends([FromQuery] int days = 30)
+        {
+            var trends = await _dashboardService.GetBookingTrendsAsync(days);
+            return Ok(trends);
         }
     }
 }
