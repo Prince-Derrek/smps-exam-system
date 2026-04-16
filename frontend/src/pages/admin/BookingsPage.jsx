@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ClipboardList } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../services/auth';
 import DataTable from '../../components/ui/DataTable';
 import Badge from '../../components/ui/Badge';
 
