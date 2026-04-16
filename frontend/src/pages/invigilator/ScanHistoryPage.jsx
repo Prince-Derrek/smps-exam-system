@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ClipboardList, CheckCircle2, Loader2 } from 'lucide-react';
-import api from '../../services/auth';
+import { getScanHistory } from '../../services/ticketService';
 
 const BRAND = '#1A5276';
 
@@ -15,20 +15,22 @@ export default function ScanHistoryPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // TODO: backend endpoint GET /api/invigilator/scan-history needed
     const fetchHistory = async () => {
       try {
-        const response = await api.get('/api/invigilator/scan-history');
-        setHistory(response.data);
-      } catch {
-        setError('Could not load scan history. The endpoint may not be available yet.');
+        setIsLoading(true);
+        // 👇 FIX: Use the service
+        const data = await getScanHistory();
+        setHistory(data);
+      } catch (err) {
+        console.error("History fetch error:", err);
+        setError('Could not load scan history. Please check your connection.');
       } finally {
         setIsLoading(false);
       }
     };
     fetchHistory();
   }, []);
-
+  
   return (
     <div className="px-4 lg:px-8 py-7 max-w-4xl mx-auto">
       <div className="mb-6">
