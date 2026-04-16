@@ -91,6 +91,23 @@ namespace SMPS.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpGet("{id}/status")]
+        public async Task<IActionResult> GetPaymentStatus(Guid id)
+        {
+            var studentId = GetCurrentStudentId();
+            if (studentId == Guid.Empty) return Unauthorized();
+
+            var bookings = await _bookingService.GetMyBookingsAsync(studentId);
+            var booking = bookings.FirstOrDefault(b => b.BookingId == id);
+
+            if (booking == null) return NotFound("Booking not found.");
+
+            return Ok(new
+            {
+                status = booking.Status,
+                receiptNumber = booking.PaymentReference
+            });
+        }
 
         // ----------------------------------------------------------------
         // V1's robust ID extractor is much safer than V2's simple Parse

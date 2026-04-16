@@ -70,7 +70,8 @@ namespace SMPS.Infrastructure.Services
                 Fee = b.ExamUnit.StandardFee,
                 Status = b.Status.ToString(),
                 PaymentReference = b.Payment?.CheckoutRequestId,
-                Message = b.Status == BookingStatus.Pending? "Awaiting Payment" : "Tracked"
+                Message = b.Status == BookingStatus.Pending? "Awaiting Payment" : "Tracked",
+                CreatedAt = b.CreatedAt
            });
         }
 

@@ -9,5 +9,6 @@ namespace SMPS.Application.DTOs.Booking
         public string UnitCode {get;set;} = string.Empty;
         public string UnitTitle {get;set;} = string.Empty;
         public decimal Fee {get;set;}
+        public DateTime CreatedAt {get;set; }
     }
 }
