@@ -43,17 +43,35 @@ const handleSubmit = async (e) => {
   try {
     setPayStatus('sending');
     const response = await initiatePayment(bookingId, formattedPhone);
+
+    let attempts = 0;
+    const maxAttempts = 30; // Poll for up to 3 minutes (12 attempts with 15s interval)
     
-      setPayStatus('success');
-      
-      // Note: Because M-Pesa is async, we pass the CheckoutRequestID as the receipt placeholder for now.
-      // In Phase 1.4, the dashboard will pull the real receipt from the DB once Safaricom calls back.
-      setTimeout(() => {
-        onPaymentSuccess({ 
-          receiptNumber: response.paymentReference || 'PENDING-SMS', 
-          ticketId: response.bookingId 
-        });
-      }, 2000);
+      const interval = setInterval(async () => {
+        attempts++;
+        try {
+          const result = await checkPaymentStatus(bookingId);
+
+          if (result.status === "Paid") {
+            clearInterval(interval);
+            setPayStatus('success');
+            
+            // Pass the REAL secure data to the ConfirmationStep
+            setTimeout(() => {
+              onPaymentSuccess({ 
+                receiptNumber: result.receiptNumber, 
+                ticketId: bookingId 
+              });
+            }, 1500);
+          } else if (result.status === "Failed" || attempts >= maxAttempts) {
+            clearInterval(interval);
+            setPayStatus('failed');
+            setError('Payment was not completed or timed out.');
+          }
+        } catch (pollErr) {
+          console.error("Polling error", pollErr);
+        }
+      }, 2000); // Check every 2 seconds
 
     } catch (err) {
       setPayStatus('failed');

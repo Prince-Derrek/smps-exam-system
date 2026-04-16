@@ -9,6 +9,10 @@ const formatCurrency = (n) => `KES ${n.toLocaleString('en-KE')}`;
 export default function ConfirmationStep({ unit, receiptNumber, ticketId, onBookAnother }) {
   const { user } = useAuth();
 
+if (!unit){
+  return <Navigate to="/student/bookings" replace />;
+}
+
   return (
     <div className="flex flex-col items-center text-center">
       {/* Success icon */}
