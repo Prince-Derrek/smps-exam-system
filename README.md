@@ -54,7 +54,7 @@ The repository is divided into two main environments:
 ```text
 SMPS-Exam-System/
 ├── backend/
-│   └── SMPS.SupplementaryExamSystem/
+│   └── src/
 │       ├── SMPS.API/             # Controllers, AppSettings, Middleware
 │       ├── SMPS.Application/     # DTOs, Interfaces, Settings
 │       ├── SMPS.Domain/          # Entities, Enums, Exceptions
@@ -65,8 +65,63 @@ SMPS-Exam-System/
         ├── components/           # Reusable UI components (Modals, Tables)
         ├── features/             # Auth Context and specialized logic
         ├── pages/                # Admin, Student, and Invigilator views
-        ├── services/             # Axios API interceptors and endpoint logic
-        ├── assets/               # Static files (images, icons)
-        ├── utils/                # Utility functions (formatting, validation)
-        └── layout/               # Common layout components (Header, Footer)
-        ```
+        └── services/             # Axios API interceptors and endpoint logic
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- [.NET 8 SDK](https://dotnet.microsoft.com/download)
+- [Node.js](https://nodejs.org/) (v18+)
+- [PostgreSQL](https://www.postgresql.org/) (v14+)
+
+### 1. Backend Setup
+
+1. Navigate to the backend directory:
+   ```bash
+   cd backend/src/SMPS.API
+   ```
+2. Update the `appsettings.Development.json` file with your PostgreSQL connection string and JWT Secret Key.
+3. Apply Entity Framework migrations to build the database:
+   ```bash
+   dotnet ef database update --project ../SMPS.Infrastructure --startup-project .
+   ```
+4. Run the API:
+   ```bash
+   dotnet run
+   ```
+   *Note: On first run, the system will automatically seed the default Admin account.*
+
+### 2. Frontend Setup
+
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install the required NPM packages:
+   ```bash
+   npm install
+   ```
+3. Start the Vite development server:
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 🔐 Default Credentials
+
+Upon running the backend for the first time, a default Administrator account is seeded into the database for testing and configuration:
+
+- **Role:** Administrator
+- **Email:** `admin@jkuat.ac.ke`
+- **Password:** `SuperSecretPassword123!`
+
+*(Please ensure you change these credentials in `appsettings.json` before deploying to production).*
+
+---
+*Developed for JKUAT - SMPS Exam System*
+```
+
