@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2, XCircle, Loader2, RotateCcw } from 'lucide-react';
 import ScannerWidget from '../features/verification/components/ScannerWidget';
-import api from '../services/auth';
+import { verifyTicket } from '../services/ticketService'; // Import the service function
 
 const BRAND = '#1A5276';
 
@@ -66,10 +66,13 @@ export default function ScannerPage() {
     setIsVerifying(true);
     setScanResult(null);
     try {
-      // TODO: backend endpoint POST /api/tickets/{ticketId}/verify needed
-      const response = await api.post(`/api/tickets/${ticketId}/verify`);
-      setScanResult({ success: true, data: response.data });
+      // 👇 FIX: Use the clean service function
+      const data = await verifyTicket(ticketId);
+      
+      // If it reaches here, the backend validated it and consumed it!
+      setScanResult({ success: true, data: data });
     } catch (err) {
+      // If backend throws InvalidOperationException (already used) or NotFound
       setScanResult({
         success: false,
         message: err.response?.data?.message ?? 'Ticket verification failed.',
