@@ -1,8 +1,10 @@
 using SMPS.Application.Interfaces;
+using SMPS.Application.Services.Interfaces;
 using SMPS.Application.DTOs.Booking;
 using SMPS.Domain.Entities;
 using SMPS.Domain.Enums;
 using SMPS.Domain.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SMPS.Infrastructure.Services
 {
@@ -15,6 +17,7 @@ namespace SMPS.Infrastructure.Services
         private readonly IPaymentRepository _payments;      
         private readonly IPaymentConnector _mpesaConnector;
         private readonly IVerificationTicketRepository _tickets;
+        private readonly ITicketService _ticketService;
 
         public BookingService(
             IBookingRepository bookings, 
@@ -22,7 +25,8 @@ namespace SMPS.Infrastructure.Services
             IUnitOfWork uow,
             IPaymentRepository payments,
             IPaymentConnector mpesaConnector,
-            IVerificationTicketRepository tickets)
+            IVerificationTicketRepository tickets,
+            ITicketService ticketService)
         {
             _bookings = bookings;
             _examUnits = examUnits;
@@ -30,6 +34,7 @@ namespace SMPS.Infrastructure.Services
             _payments = payments;
             _mpesaConnector = mpesaConnector;
             _tickets = tickets;
+            _ticketService = ticketService;
         }
 
         public async Task<IEnumerable<ExamUnitDto>> GetAvailableExamUnitsAsync(Guid studentId)
@@ -166,55 +171,54 @@ namespace SMPS.Infrastructure.Services
         }
         public async Task<bool> ConfirmPaymentAsync(string checkoutRequestId, int resultCode, string resultDesc, string? receiptNumber)
         {
-            // 1. Find the Payment Record using the golden ticket ID
             var payment = await _payments.GetByCheckoutRequestIdAsync(checkoutRequestId);
-            if (payment == null)
-                return false; // Not our transaction
+            if (payment == null) return false;
 
-            // 2. Find the associated Booking
             var booking = await _bookings.GetByIdAsync(payment.BookingId);
-            if (booking == null)
-                return false;
+            if (booking == null) return false;
 
-            // 3. Process the Result Code from Safaricom
             if (resultCode == 0)
             {
-                // 0 means SUCCESS!
-                payment.Status = PaymentStatus.Completed;
-                payment.MpesaReceiptNumber = receiptNumber;
+                // 1. Handle DB state changes (Mint Ticket, Update Statuses)
+                await FinalizePaymentAndMintTicketAsync(booking, payment, receiptNumber);
 
-                booking.Status = BookingStatus.Paid;
-
-                // TODO: In Phase 6, we will generate the VerificationTicket (QR Code) here!
-                var ticket = new VerificationTicket
-                {
-                    Id = Guid.NewGuid(), // The unguessable key!
-                    BookingId = booking.Id,
-                    IsUsed = false
-                };
-
-                // Add it to the context. 
-                // It will be saved instantly when _uow.SaveChangesAsync() runs at the bottom of this method!
-                await _tickets.AddAsync(ticket);
+                // 2. Hand off the heavy lifting to the Hangfire Queue!
+                _ticketService.EnqueueTicketGeneration(booking.Id);
             }
             else if (resultCode == 1032)
             {
-                // 1032 means the user clicked "Cancel" on the phone prompt
                 payment.Status = PaymentStatus.Cancelled;
                 booking.Status = BookingStatus.Failed;
+                await _uow.SaveChangesAsync(System.Threading.CancellationToken.None);
             }
             else
             {
-                // Any other code (insufficient funds, timeout, bad PIN)
                 payment.Status = PaymentStatus.Failed;
                 booking.Status = BookingStatus.Failed;
+                await _uow.SaveChangesAsync(System.Threading.CancellationToken.None);
             }
 
-            // 4. Save everything to the database
-            
-            await _uow.SaveChangesAsync(System.Threading.CancellationToken.None);
-
             return true;
+        }
+        private async Task FinalizePaymentAndMintTicketAsync(Booking booking, PaymentRecord payment, string receiptNumber)
+        {
+            // Update existing records
+            payment.Status = PaymentStatus.Completed;
+            payment.MpesaReceiptNumber = receiptNumber;
+            booking.Status = BookingStatus.Paid;
+
+            // Mint the new ticket token
+            var ticket = new VerificationTicket
+            {
+                Id = Guid.NewGuid(),
+                BookingId = booking.Id,
+                IsUsed = false
+            };
+
+            await _tickets.AddAsync(ticket);
+
+            // One single save to commit the Payment, Booking, and Ticket updates simultaneously!
+            await _uow.SaveChangesAsync(System.Threading.CancellationToken.None);
         }
     }
 }

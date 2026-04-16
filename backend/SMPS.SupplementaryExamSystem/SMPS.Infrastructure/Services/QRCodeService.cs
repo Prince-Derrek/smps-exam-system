@@ -1,5 +1,5 @@
 ﻿using QRCoder;
-using SMPS.Application.Interfaces;
+using SMPS.Application.Services.Interfaces;
 using System;
 
 namespace SMPS.Infrastructure.Services
