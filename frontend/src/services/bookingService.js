@@ -1,4 +1,4 @@
-import api from './Api'; // Using the interceptor we built in Phase 1.1
+import api from './auth'; // Using the interceptor we built in Phase 1.1
 
 export const getAvailableUnits = async () => {
   const response = await api.get('/api/bookings/availableunits');
