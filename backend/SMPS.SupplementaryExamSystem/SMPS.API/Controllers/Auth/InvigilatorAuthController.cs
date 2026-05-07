@@ -10,7 +10,7 @@ namespace SMPS.API.Controllers.Auth
 {
     [ApiController]
     [Route("api/auth/invigilator")]
-    [Authorize(Roles = "Admin")] // Only Admins can register or manage invigilators
+    
     public class InvigilatorAuthController : ControllerBase
     {
         private readonly IInvigilatorRepository _invigilators;
@@ -29,6 +29,7 @@ namespace SMPS.API.Controllers.Auth
 
         // POST api/auth/invigilator/register
         [HttpPost("register")]
+        [Authorize(Roles = "Admin")] // Only Admins can register invigilators
         public async Task<IActionResult> Register([FromBody] InvigilatorRegisterRequest req)
         {
             if (await _invigilators.InvigilatorExistsByEmailAsync(req.Email))
