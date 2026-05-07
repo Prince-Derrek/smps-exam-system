@@ -79,6 +79,10 @@ export default function Login() {
           <p className="auth-switch">
             Don't have an account? <Link to="/register">Create one here</Link>
           </p>
+
+          <p className="auth-switch">
+            <Link to="/" style={{ color: '#1A5276' }}>← Back to role selection</Link>
+          </p>
         </div>
       </div>
     </div>
