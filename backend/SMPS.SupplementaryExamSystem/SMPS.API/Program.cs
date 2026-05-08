@@ -1,21 +1,23 @@
-using System.Text;
+using Hangfire;
+using Hangfire.Redis;
+using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SMPS.Application.Features.Students.Queries.GetDashboard;
+using SMPS.Application.Interfaces;
+using SMPS.Application.Services.Implementation;
+using SMPS.Application.Services.Interfaces;
 using SMPS.Application.Settings;
 using SMPS.Domain.Interfaces;
+using SMPS.Infrastructure.Data.Seeders;
 using SMPS.Infrastructure.Persistence;
 using SMPS.Infrastructure.Repositories;
 using SMPS.Infrastructure.Security;
-using SMPS.Application.Interfaces;
-using SMPS.Application.Services.Interfaces;
 using SMPS.Infrastructure.Services;
-using Hangfire;
-using Hangfire.PostgreSql;
-using SMPS.Application.Features.Students.Queries.GetDashboard;
+using StackExchange.Redis;
 using System.Security.Claims;
-using SMPS.Application.Services.Implementation;
-using SMPS.Infrastructure.Data.Seeders;
+using System.Text;
 
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
@@ -27,11 +29,24 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. DATABASE
 // -------------------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgres://"))
+// 1. FAIL FAST: If Render didn't load the variable, crash with a clear message, not a cryptic index 0 error.
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("CRITICAL SYSTEM HALT: The DefaultConnection string is empty. Check Render Environment Variables!");
+}
+
+// 2. THE PARSER: Handle both 'postgres://' and 'postgresql://' safely
+if (connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
+    connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
 {
     var uri = new Uri(connectionString);
     var userInfo = uri.UserInfo.Split(':');
-    connectionString = $"Host={uri.Host};Port={(uri.Port > 0 ? uri.Port : 5432)};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};Ssl Mode=Require;Trust Server Certificate=true;";
+
+    var username = userInfo.Length > 0 ? userInfo[0] : "";
+    var password = userInfo.Length > 1 ? userInfo[1] : "";
+
+    // Rebuild into the strict ADO.NET format that Npgsql demands
+    connectionString = $"Host={uri.Host};Port={(uri.Port > 0 ? uri.Port : 5432)};Database={uri.AbsolutePath.TrimStart('/')};Username={username};Password={password};Ssl Mode=Require;Trust Server Certificate=true;";
 }
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -39,17 +54,38 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IApplicationDbContext>(provider =>
     provider.GetRequiredService<ApplicationDbContext>());
 
+var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
+if (!string.IsNullOrEmpty(redisConnectionString) && redisConnectionString.StartsWith("redis"))
+{
+    var uri = new Uri(redisConnectionString);
+
+    // Extract password (Render URLs usually format as redis://red-user:password@host:port)
+    var userInfo = uri.UserInfo.Split(':');
+    var password = userInfo.Length > 1 ? userInfo[1] : string.Empty;
+
+    // Check if it's secure Redis (rediss://)
+    bool useSsl = uri.Scheme.Equals("rediss", StringComparison.OrdinalIgnoreCase);
+
+    // Rebuild the string into the exact format StackExchange demands
+    redisConnectionString = $"{uri.Host}:{uri.Port},password={password},ssl={useSsl},abortConnect=False";
+}
+
 builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
-    // UPDATED: Using the new options pattern to fix the obsolete warning
-    .UsePostgreSqlStorage(options =>
-        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))
-    ));
+    .UseRedisStorage(redisConnectionString, new RedisStorageOptions
+    {
+        Prefix = "hangfire:",
+        SucceededListSize = 1000,
+        DeletedListSize = 1000
+    }));
 
 // 2. Add the Hangfire Server
-builder.Services.AddHangfireServer();
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = 1; // CRITICAL for 512MB Render containers!
+});
 
 // -------------------------------------------------------
 // 2. REPOSITORIES & UNIT OF WORK
