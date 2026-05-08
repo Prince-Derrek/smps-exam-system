@@ -29,11 +29,24 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. DATABASE
 // -------------------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgres://"))
+// 1. FAIL FAST: If Render didn't load the variable, crash with a clear message, not a cryptic index 0 error.
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("CRITICAL SYSTEM HALT: The DefaultConnection string is empty. Check Render Environment Variables!");
+}
+
+// 2. THE PARSER: Handle both 'postgres://' and 'postgresql://' safely
+if (connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
+    connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
 {
     var uri = new Uri(connectionString);
     var userInfo = uri.UserInfo.Split(':');
-    connectionString = $"Host={uri.Host};Port={(uri.Port > 0 ? uri.Port : 5432)};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};Ssl Mode=Require;Trust Server Certificate=true;";
+
+    var username = userInfo.Length > 0 ? userInfo[0] : "";
+    var password = userInfo.Length > 1 ? userInfo[1] : "";
+
+    // Rebuild into the strict ADO.NET format that Npgsql demands
+    connectionString = $"Host={uri.Host};Port={(uri.Port > 0 ? uri.Port : 5432)};Database={uri.AbsolutePath.TrimStart('/')};Username={username};Password={password};Ssl Mode=Require;Trust Server Certificate=true;";
 }
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
