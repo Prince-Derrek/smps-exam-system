@@ -1,21 +1,23 @@
-using System.Text;
+using Hangfire;
+using Hangfire.Redis;
+using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SMPS.Application.Features.Students.Queries.GetDashboard;
+using SMPS.Application.Interfaces;
+using SMPS.Application.Services.Implementation;
+using SMPS.Application.Services.Interfaces;
 using SMPS.Application.Settings;
 using SMPS.Domain.Interfaces;
+using SMPS.Infrastructure.Data.Seeders;
 using SMPS.Infrastructure.Persistence;
 using SMPS.Infrastructure.Repositories;
 using SMPS.Infrastructure.Security;
-using SMPS.Application.Interfaces;
-using SMPS.Application.Services.Interfaces;
 using SMPS.Infrastructure.Services;
-using Hangfire;
-using Hangfire.PostgreSql;
-using SMPS.Application.Features.Students.Queries.GetDashboard;
+using StackExchange.Redis;
 using System.Security.Claims;
-using SMPS.Application.Services.Implementation;
-using SMPS.Infrastructure.Data.Seeders;
+using System.Text;
 
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
@@ -39,20 +41,24 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IApplicationDbContext>(provider =>
     provider.GetRequiredService<ApplicationDbContext>());
 
+var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
+
 builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
-    .UsePostgreSqlStorage(options =>
+    .UseRedisStorage(redisConnectionString, new RedisStorageOptions
     {
-        options.UseNpgsqlConnection(connectionString);
+        Prefix = "hangfire:",
+        // Optional: keeps Redis memory clean by deleting old successful jobs faster
+        SucceededListSize = 1000,
+        DeletedListSize = 1000
     }));
 
 // 2. Add the Hangfire Server
 builder.Services.AddHangfireServer(options =>
 {
     options.WorkerCount = 1; // CRITICAL for 512MB Render containers!
-    options.SchedulePollingInterval = TimeSpan.FromMinutes(1); // Check for jobs every 60s instead of 15s
 });
 
 // -------------------------------------------------------
