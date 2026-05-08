@@ -42,6 +42,20 @@ builder.Services.AddScoped<IApplicationDbContext>(provider =>
     provider.GetRequiredService<ApplicationDbContext>());
 
 var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
+if (!string.IsNullOrEmpty(redisConnectionString) && redisConnectionString.StartsWith("redis"))
+{
+    var uri = new Uri(redisConnectionString);
+
+    // Extract password (Render URLs usually format as redis://red-user:password@host:port)
+    var userInfo = uri.UserInfo.Split(':');
+    var password = userInfo.Length > 1 ? userInfo[1] : string.Empty;
+
+    // Check if it's secure Redis (rediss://)
+    bool useSsl = uri.Scheme.Equals("rediss", StringComparison.OrdinalIgnoreCase);
+
+    // Rebuild the string into the exact format StackExchange demands
+    redisConnectionString = $"{uri.Host}:{uri.Port},password={password},ssl={useSsl},abortConnect=False";
+}
 
 builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
@@ -50,7 +64,6 @@ builder.Services.AddHangfire(config => config
     .UseRedisStorage(redisConnectionString, new RedisStorageOptions
     {
         Prefix = "hangfire:",
-        // Optional: keeps Redis memory clean by deleting old successful jobs faster
         SucceededListSize = 1000,
         DeletedListSize = 1000
     }));
