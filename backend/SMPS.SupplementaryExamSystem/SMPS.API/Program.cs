@@ -43,13 +43,17 @@ builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
-    // UPDATED: Using the new options pattern to fix the obsolete warning
     .UsePostgreSqlStorage(options =>
-        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))
-    ));
+    {
+        options.UseNpgsqlConnection(connectionString);
+    }));
 
 // 2. Add the Hangfire Server
-builder.Services.AddHangfireServer();
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = 1; // CRITICAL for 512MB Render containers!
+    options.SchedulePollingInterval = TimeSpan.FromMinutes(1); // Check for jobs every 60s instead of 15s
+});
 
 // -------------------------------------------------------
 // 2. REPOSITORIES & UNIT OF WORK
