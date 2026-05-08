@@ -36,12 +36,12 @@ if (string.IsNullOrWhiteSpace(connectionString))
 }
 
 // 2. THE PARSER: Handle both 'postgres://' and 'postgresql://' safely
-if (connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
+if (connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) || 
     connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
 {
     var uri = new Uri(connectionString);
     var userInfo = uri.UserInfo.Split(':');
-
+    
     var username = userInfo.Length > 0 ? userInfo[0] : "";
     var password = userInfo.Length > 1 ? userInfo[1] : "";
 
@@ -192,12 +192,13 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
+    options.AddPolicy("AllowRenderFrontend",
+        policy => policy
+            // REPLACE THIS with your actual React frontend URL from Render
+            .WithOrigins("https://smps-portal.onrender.com")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials());
 });
 
 builder.Services.Configure<AdminSeedSettings>(
@@ -213,7 +214,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowFrontend");
+app.UseCors("AllowRenderFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
