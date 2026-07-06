@@ -42,7 +42,7 @@ namespace SMPS.Infrastructure.Services
             await smtp.ConnectAsync(_config["EmailSettings:SmtpServer"], int.Parse(_config["EmailSettings:SmtpPort"]), SecureSocketOptions.StartTls);
 
             // Authenticate using your App Password!
-            await smtp.AuthenticateAsync(_config["EmailSettings:SenderEmail"], _config["EmailSettings:AppPassword"]);
+            await smtp.AuthenticateAsync("resend", _config["EmailSettings:AppPassword"]);
 
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
