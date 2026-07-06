@@ -164,7 +164,9 @@ namespace SMPS.Infrastructure.Services
             {
                 // Safaricom rejected the request (e.g., invalid phone number)
                 paymentRecord.Status = PaymentStatus.Failed;
-                _payments.Update(paymentRecord);
+
+                // REMOVED _payments.Update(paymentRecord); !!!
+
                 await _uow.SaveChangesAsync(CancellationToken.None);
 
                 throw new InvalidOperationException($"M-Pesa Error: {mpesaResponse.Message}");
