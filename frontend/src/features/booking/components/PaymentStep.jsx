@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Smartphone, Loader2, CheckCircle2, XCircle, AlertTriangle, ArrowLeft } from 'lucide-react';
-import { initiatePayment } from '../../../services/bookingService';
+import { initiatePayment, checkPaymentStatus } from '../../../services/bookingService';
 
 const formatCurrency = (n) => `KES ${n.toLocaleString('en-KE')}`;
 
@@ -13,66 +13,91 @@ const statusMessages = {
 
 export default function PaymentStep({ unit, bookingId, onPaymentSuccess, onBack }) {
   const [phone, setPhone] = useState('');
-  const [payStatus, setPayStatus] = useState(null); // 'sending', 'success', 'failed'
+  const [payStatus, setPayStatus] = useState(null); // 'sending', 'waiting', 'success', 'failed'
   const [error, setError] = useState('');
 
-  const isProcessing = payStatus === 'sending';
+  const isProcessing = payStatus === 'sending' || payStatus === 'waiting';
 
-  // Validates: 07..., 01..., 2547..., 2541..., or +2547..., +2541...
-const validatePhone = (v) => /^(?:254|\+254|0)(7|1)\d{8}$/.test(v);
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError('');
-
-  let rawPhone = phone.replace(/\s/g, '');
-
-  if (!validatePhone(rawPhone)) {
-    setError('Enter a valid Kenyan mobile number (e.g. 0712 345 678).');
-    return;
-  }
-
-  let formattedPhone = rawPhone;
-  
-  if (formattedPhone.startsWith('+')) {
-    formattedPhone = formattedPhone.slice(1); // Strip the '+'
-  } else if (formattedPhone.startsWith('0')) {
-    formattedPhone = '254' + formattedPhone.slice(1); // Replace '0' with '254'
-  }
-
-  try {
-    setPayStatus('sending');
-    const response = await initiatePayment(bookingId, formattedPhone);
-
+  useEffect(() => {
+    let isMounted = true;
+    let pollTimer = null;
     let attempts = 0;
-    const maxAttempts = 30; // Poll for up to 3 minutes (12 attempts with 15s interval)
-    
-      const interval = setInterval(async () => {
-        attempts++;
-        try {
-          const result = await checkPaymentStatus(bookingId);
+    const maxAttempts = 40; // 2 minutes total (3 seconds * 40)
 
-          if (result.status === "Paid") {
-            clearInterval(interval);
-            setPayStatus('success');
-            
-            // Pass the REAL secure data to the ConfirmationStep
-            setTimeout(() => {
+    const pollDatabase = async () => {
+      if (!isMounted || payStatus !== 'waiting') return;
+
+      try {
+        attempts++;
+        const result = await checkPaymentStatus(bookingId);
+
+        if (result.status === "Paid") {
+          setPayStatus('success');
+          
+          setTimeout(() => {
+            if (isMounted) {
               onPaymentSuccess({ 
-                receiptNumber: result.receiptNumber, 
+                receiptNumber: result.receiptNumber || result.paymentReference, 
                 ticketId: bookingId 
               });
-            }, 1500);
-          } else if (result.status === "Failed" || attempts >= maxAttempts) {
-            clearInterval(interval);
-            setPayStatus('failed');
-            setError('Payment was not completed or timed out.');
-          }
-        } catch (pollErr) {
-          console.error("Polling error", pollErr);
+            }
+          }, 1500);
+          return; 
+        } 
+        
+        if (result.status === "Failed" || result.status === "Cancelled" || attempts >= maxAttempts) {
+          setPayStatus('failed');
+          setError('Payment request timed out or was cancelled by the user.');
+          return; 
         }
-      }, 2000); // Check every 2 seconds
 
+        if (isMounted) {
+          pollTimer = setTimeout(pollDatabase, 3000);
+        }
+
+      } catch (pollErr) {
+        console.error("Polling error", pollErr);
+        if (isMounted && attempts < maxAttempts) {
+          pollTimer = setTimeout(pollDatabase, 3000);
+        }
+      }
+    };
+
+    if (payStatus === 'waiting') {
+      pollDatabase();
+    }
+
+    return () => {
+      isMounted = false;
+      if (pollTimer) clearTimeout(pollTimer);
+    };
+  }, [payStatus, bookingId, onPaymentSuccess]);
+
+  const validatePhone = (v) => /^(?:254|\+254|0)(7|1)\d{8}$/.test(v);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    let rawPhone = phone.replace(/\s/g, '');
+
+    if (!validatePhone(rawPhone)) {
+      setError('Enter a valid Kenyan mobile number (e.g. 0712 345 678).');
+      return;
+    }
+
+    let formattedPhone = rawPhone;
+    
+    if (formattedPhone.startsWith('+')) {
+      formattedPhone = formattedPhone.slice(1);
+    } else if (formattedPhone.startsWith('0')) {
+      formattedPhone = '254' + formattedPhone.slice(1);
+    }
+
+    try {
+      setPayStatus('sending');
+      await initiatePayment(bookingId, formattedPhone);
+      setPayStatus('waiting');
     } catch (err) {
       setPayStatus('failed');
       setError(err.response?.data?.message || 'M-Pesa STK push failed.');
